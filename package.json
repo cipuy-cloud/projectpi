@@ -1,0 +1,20 @@
+{
+  "name": "programkasir",
+  "version": "1.0.0",
+  "description": "Aplikasi Kasir Berbasis Web",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "David Barnabas",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^11.2.1"
+  },
+  "dependencies": {
+    "bootstrap": "^4.6.0",
+    "jquery": "^3.5.1",
+    "sqlite3": "^5.0.1",
+    "uuid": "^8.3.2"
+  }
+}
