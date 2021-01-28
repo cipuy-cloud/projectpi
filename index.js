@@ -16,7 +16,7 @@ function createWindow () {
       nodeIntegration: true
     }
   })
-// load to file app kasir
+// load file html
   mainWindow.loadFile('index.html')
 }
 
