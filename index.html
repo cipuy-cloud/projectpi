@@ -154,8 +154,7 @@
 <script>
     window.$ = window.jQuery = require('jquery')
 </script>
-<script>
-    //data IpcRenderer detect to electron 
+<script> 
      const electron = require('electron')
      const { ipcRenderer } = electron
     
@@ -163,7 +162,7 @@
      const penampungData = {}
      var hitungToatlHargaBarang = 0
 
-     //Function button submit (Masukan Keranjang)
+     //button submit (Masukan Keranjang)
      form.addEventListener("submit", event => {
         event.preventDefault();
         for (let i = 0; i < form.elements.length; i++) {
