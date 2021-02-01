@@ -26,8 +26,7 @@
         "bootstrap": "^4.6.0",
         "channel": "0.0.1",
         "sqlite": "^4.0.19",
-        "sqlite3": "^5.0.1",
-        "uuid": "^8.3.2"
+        "sqlite3": "^5.0.1"
     },
     "build": {
         "extraResources": [

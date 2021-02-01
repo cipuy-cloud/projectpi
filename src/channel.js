@@ -2,7 +2,7 @@ const {ipcMain} = require("electron")
 const sqlite3 = require("sqlite3")
 const {open} = require("sqlite")
 const path = require("path")
-const {TAMBAH_MASSAGE, GET_MASSAGE} = require("./const")
+const {TAMBAH_MASSAGE, GET_MASSAGE, BAYAR_MESSAGE} = require("./const")
 
 
 
@@ -23,6 +23,10 @@ class Channel {
             let all = await this.all();
             return all
         })
+        ipcMain.handle(BAYAR_MESSAGE, async () => {
+            await this.delete_all()
+            return true
+        })
     }
 
     async connectDb() {
@@ -39,9 +43,11 @@ class Channel {
         await this.db.exec(`CREATE TABLE IF NOT EXISTS ${this.nama_database}(id INTEGER PRIMARY KEY, kodebarang INTEGER, namabarang TEXT, harga INT, jumlah INT)`);
 
     }
+    async delete_all() {
+        await this.db.exec(`DELETE from ${this.nama_database}`)
+    }
 
     async tambah(kodebarang, namabarang, harga, jumlah) {
-        console.log("fired");
         let result = await this.db.run(`INSERT INTO ${this.nama_database}(kodebarang,namabarang, harga, jumlah) VALUES(:kodebarang,:namabarang, :harga, :jumlah)`, {
             ":kodebarang": kodebarang,
             ":namabarang": namabarang,

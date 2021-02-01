@@ -36,7 +36,7 @@
                                                 <h5>INPUT BELANJAAN</h5>
                                             </div>
                                             <div class="clear pd-10"></div>
-                                            <form id="form_tambah_barang">
+                                            <form id="form_tambah_keranjang">
                                                 <div class="form-group row">
                                                     <label class="col-sm-4 col-form-label text-inputs">Kode
                                                         Barang</label>
@@ -61,8 +61,7 @@
                                                     </div>
                                                 </div>
                                                 <div class="form-group row">
-                                                    <label for="inputPassword"
-                                                        class="col-sm-4 col-form-label text-inputs">Jumlah</label>
+                                                    <label class="col-sm-4 col-form-label text-inputs">Jumlah</label>
                                                     <div class="col-sm-5">
                                                         <input type="number" name="jumlah_barang" class="form-control"
                                                             minlength="0" id="jumlah_barang" required>
@@ -111,27 +110,25 @@
                                             <tbody id="daftar_barang_belanjaan">
                                             </tbody>
                                         </table>
-                                        <form>
+                                        <form id="keranjang_pembayaran">
                                             <div class="form-group row">
-                                                <label for="staticEmail"
-                                                    class="col-sm-3 col-form-label text-inputs">Masukan uang</label>
+                                                <label class="col-sm-3 col-form-label text-inputs">Masukan uang</label>
                                                 <div class="col-sm-6">
-                                                    <input type="text" name="UangBayar" class="form-control kode_barang"
-                                                        id="UangBayar" required="yes" placeholder="Rp.">
-                                                </div>
-                                            </div>
-                                            <div class="form-group row">
-                                                <label for="staticEmail"
-                                                    class="col-sm-3 col-form-label text-inputs">Kembalian</label>
-                                                <div class="col-sm-6">
-                                                    <input type="text" name="UangKembalian"
-                                                        class="form-control kode_barang" id="UangKembalian" readonly
+                                                    <input type="number" name="form_bayar"
+                                                        class="form-control kode_barang" required="yes"
                                                         placeholder="Rp.">
                                                 </div>
                                             </div>
                                             <div class="form-group row">
+                                                <label class="col-sm-3 col-form-label text-inputs">Kembalian</label>
+                                                <div class="col-sm-6">
+                                                    <input type="number" name="form_kembalian"
+                                                        class="form-control kode_barang" placeholder="Rp." disabled>
+                                                </div>
+                                            </div>
+                                            <div class="form-group row">
                                                 <div class="col-md-4">
-                                                    <button type="button" id="tombol_bayar"
+                                                    <button type="submit" id="tombol_bayar"
                                                         class="btn btn-success btn-block">BAYAR</button>
                                                 </div>
                                             </div>
