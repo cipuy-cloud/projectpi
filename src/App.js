@@ -1,6 +1,4 @@
-import {GET_MASSAGE, BAYAR_MESSAGE, TAMBAH_MASSAGE} from "./const"
-const electron = window.require("electron")
-const {ipcRenderer} = electron;
+
 
 class Controller {
     constructor(view, model) {
@@ -11,8 +9,8 @@ class Controller {
 
     async run() {
         this.view.handlerDaftarList(await this.model.daftar_barang)
-        this.view.initFormListener(async (...val) => {
-            this.model.tambah(...val)
+        this.view.initFormListener(async (val) => {
+            this.model.tambah(val)
             this.view.handlerDaftarList(await this.model.daftar_barang)
         })
         this.view.listenerKeranjangBelanjaan(async () => {
@@ -144,20 +142,19 @@ class Model {
     }
 
 
-    async tambah({kodebarang, namabarang, harga, jumlah}) {
-        let result = await ipcRenderer.invoke(TAMBAH_MASSAGE, kodebarang, namabarang, harga, jumlah)
+    async tambah(barang) {
+        let result = await window.api.tambah(barang)
         this.daftar_barang.push(result);
     }
 
     async bayar() {
-        let is_success = await ipcRenderer.invoke(BAYAR_MESSAGE)
-        return is_success
+        await window.api.bayar()
     }
 
     async all() {
-        const result = await ipcRenderer.invoke(GET_MASSAGE)
-        return result
+        return await window.api.barang()
     }
+
 }
 
 
