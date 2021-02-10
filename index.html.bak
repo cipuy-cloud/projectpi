@@ -5,7 +5,6 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Security-Policy" content="script-src 'self';">
     <title>Aplikasi Kasir</title>
-    <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 
 <body>
@@ -144,6 +143,6 @@
         </div>
     </div>
 </body>
-<script src="bundle.js"></script>
+<script src="public/bundle.js"></script>
 
 </html>

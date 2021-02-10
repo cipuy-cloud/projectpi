@@ -19,10 +19,12 @@ if (serve) {
 
 const createWindow = () => {
     mainWindow = new BrowserWindow({
-        width: 1224,
-        height: 800,
+        width: 1024,
+        height: 600,
         title: "Aplikasi Kasir",
         show: false,
+        // frame: false,
+        // transparent: true,
         webPreferences: {
             contextIsolation: true,
             preload: `${__dirname}/preload.js`
@@ -31,7 +33,7 @@ const createWindow = () => {
 
 
 
-    mainWindow.loadURL(`file://${__dirname}/public/index.html`);
+    mainWindow.loadURL(`file://${__dirname}/index.html`);
 
     mainWindow.once('ready-to-show', () => {
         mainWindow.show()

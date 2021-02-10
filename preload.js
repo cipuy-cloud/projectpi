@@ -1,6 +1,7 @@
 const {contextBridge, ipcRenderer} = require("electron")
 const {GET_MASSAGE, BAYAR_MESSAGE, TAMBAH_MASSAGE} = require("./src/const")
 
+// buat jembatan antara electron dan web
 
 contextBridge.exposeInMainWorld("api", {
     tambah: ({kodebarang, namabarang, harga, jumlah}) => ipcRenderer.invoke(TAMBAH_MASSAGE, kodebarang, namabarang, harga, jumlah),

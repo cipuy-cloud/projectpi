@@ -4,8 +4,6 @@ const {open} = require("sqlite")
 const path = require("path")
 const {TAMBAH_MASSAGE, GET_MASSAGE, BAYAR_MESSAGE} = require("./const")
 
-
-
 class Channel {
     constructor() {
         this.nama_database = "daftarbarang";

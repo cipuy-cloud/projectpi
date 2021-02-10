@@ -1,3 +1,6 @@
+// import css
+import "../assets/style/style.css"
+
 import {Controller, Model, View} from "./App"
 
 

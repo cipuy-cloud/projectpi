@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self';">
+    <title>Aplikasi Kasir</title>
+</head>
+
+<body>
+    <div id="app" class="container">
+        <div class="item">
+            <div class="col-md-12 text-center">
+                <h2>APLIKASI KASIR</h2>
+            </div>
+        </div>
+    </div>
+    <div class="item">
+        <div class="row">
+            <div class="col-md-5">
+                <div class="">
+                    <div class="jumbotron jumbotron-fluid">
+                        <div class="">
+                            <div class="col-md-12">
+                                <div class="text-center">
+                                    <h5>INPUT BELANJAAN</h5>
+                                </div>
+                                <div class="clear pd-10"></div>
+                                <form id="form_tambah_keranjang">
+                                    <div class="form-group row">
+                                        <label class="col-sm-4 col-form-label text-inputs">Kode
+                                            Barang</label>
+                                        <div class="col-sm-6">
+                                            <input type="text" name="kode_barang" class="form-control kode_barang"
+                                                required="yes">
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-4 col-form-label text-inputs">Nama
+                                            Barang</label>
+                                        <div class="col-sm-8">
+                                            <input type="text" name="nama_barang" class="form-control nama_barang"
+                                                required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-4 col-form-label text-inputs">Harga</label>
+                                        <div class="col-sm-7">
+                                            <input type="number" name="harga" class="form-control harga" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <label class="col-sm-4 col-form-label text-inputs">Jumlah</label>
+                                        <div class="col-sm-5">
+                                            <input type="number" name="jumlah_barang" class="form-control" minlength="0"
+                                                id="jumlah_barang" required>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row" style="background-color: rgba(255, 215, 101, 0.2);">
+                                        <label for="inputPassword" class="col-sm-4 col-form-label"><b>Total</b></label>
+                                        <div class="col-sm-8">
+                                            <input type="hidden" id="total_harga_barang" name="total_harga_barang">
+                                            <h4>Rp. <span class="total_harga"></span></h4>
+                                        </div>
+                                    </div>
+                                    <div class="form-group row">
+                                        <div class="col-md-12">
+                                            <button type="submit" id="button" class="btn btn-info btn-block">Masukan
+                                                Ke Keranjang</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="">
+                    <div class="jumbotron jumbotron-fluid">
+                        <div class="col-md-12">
+                            <div class="text-center">
+                                <h5>KERANJANG BELANJAAN</h5>
+                            </div>
+                            <div class="clear pd-10"></div>
+                            <table class="table table-hover">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th scope="col">Kode Barang</th>
+                                        <th scope="col">Nama Barang</th>
+                                        <th scope="col">Harga</th>
+                                        <th scope="col">Jumlah</th>
+                                        <th scope="col">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="daftar_barang_belanjaan">
+                                </tbody>
+                            </table>
+                            <form id="keranjang_pembayaran">
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label text-inputs">Masukan uang</label>
+                                    <div class="col-sm-6">
+                                        <input type="number" name="form_bayar" class="form-control kode_barang"
+                                            required="yes" placeholder="Rp.">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-3 col-form-label text-inputs">Kembalian</label>
+                                    <div class="col-sm-6">
+                                        <input type="number" name="form_kembalian" class="form-control kode_barang"
+                                            placeholder="Rp." disabled>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <div class="col-md-4">
+                                        <button type="submit" id="tombol_bayar"
+                                            class="btn btn-success btn-block">BAYAR</button>
+                                    </div>
+                                </div>
+                            </form>
+                            <div id="listpp"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</body>
+<script src="public/bundle.js"></script>
+
+</html>
