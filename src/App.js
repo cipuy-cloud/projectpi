@@ -33,7 +33,6 @@ class View {
         this.total = document.getElementById("total_harga_barang")
         this.total_display = document.querySelector(".total_harga")
         this.total_harga_barang = 0
-
         this.form_keranjang_belanjaan = document.getElementById("keranjang_pembayaran")
         this.form_bayar = this.form_keranjang_belanjaan.elements["form_bayar"]
         this.form_kembali = this.form_keranjang_belanjaan.elements["form_kembalian"]
@@ -95,6 +94,7 @@ class View {
 
         })
     }
+
     handlerBayar() {
         this.form_bayar.onchange = () => {
             this.form_kembali.value = this.form_bayar.value - this.total_harga_barang;

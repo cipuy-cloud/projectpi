@@ -8,84 +8,77 @@
 </head>
 
 <body>
-    <div id="app" class="container column between">
-        <div class="head item container row drag">
-            <h1>Aplikasi</h1>
-            <h2>Kasir</h2>
-        </div>
-        <div class="item container row between">
-            <div class="item container column">
-                <div class="item">
-                    <h5 class="transparent-font">INPUT BELANJAAN</h5>
+    <div id="app" class="container row between">
+        <div id="left" class="item">
+            <div class="head item container row drag">
+                <h1>Aplikasi</h1>
+                <h2>Kasir</h2>
+            </div>
+            <div class="item container row between">
+                <div class="item container column">
+                    <div class="item">
+                        <h5 class="transparent-font">INPUT BELANJAAN</h5>
+                    </div>
+                    <form id="form_tambah_keranjang" class="item container column">
+                        <div class="item container row">
+                            <label class="item">Kode
+                                Barang</label>
+                            <input class="item" type="text" name="kode_barang" class="form-control kode_barang"
+                                required="yes">
+                        </div>
+                        <div class="item container row">
+                            <label class="item">Nama
+                                Barang</label>
+                            <input class="item" type="text" name="nama_barang" class="form-control nama_barang"
+                                required>
+                        </div>
+                        <div class="item container row">
+                            <label class="item">Harga</label>
+                            <input class="item" type="number" name="harga" class="form-control harga" required>
+                        </div>
+                        <div class="item container row">
+                            <label class="item">Jumlah</label>
+                            <input class="item" type="number" name="jumlah_barang" class="form-control" minlength="0"
+                                id="jumlah_barang" required>
+                        </div>
+                        <div class="item container row">
+                            <label item="item"><b>Total</b></label>
+                            <h4 class="item">Rp. <span class="total_harga"></span></h4>
+                        </div>
+                        <div class="item container row">
+                            <button class="item" type="submit" id="button" class="btn btn-info btn-block">Masukan
+                                Ke Keranjang</button>
+                        </div>
+                    </form>
                 </div>
-                <form id="form_tambah_keranjang" class="item container column">
-                    <div class="item container row">
-                        <label class="item">Kode
-                            Barang</label>
-                        <input class="item" type="text" name="kode_barang" class="form-control kode_barang"
-                            required="yes">
-                    </div>
-                    <div class="item container row">
-                        <label class="item">Nama
-                            Barang</label>
-                        <input class="item" type="text" name="nama_barang" class="form-control nama_barang" required>
-                    </div>
-                    <div class="item container row">
-                        <label class="item">Harga</label>
-                        <input class="item" type="number" name="harga" class="form-control harga" required>
-                    </div>
-                    <div class="item container row">
-                        <label class="item">Jumlah</label>
-                        <input class="item" type="number" name="jumlah_barang" class="form-control" minlength="0"
-                            id="jumlah_barang" required>
-                    </div>
-                    <div class="item container row">
-                        <label item="item"><b>Total</b></label>
-                        <h4 class="item">Rp. <span class="total_harga"></span></h4>
-                    </div>
-                    <div class="item container row">
-                        <button class="item" type="submit" id="button" class="btn btn-info btn-block">Masukan
-                            Ke Keranjang</button>
-                    </div>
-                </form>
             </div>
-            <div class="item container column">
-                <h5 class="item">KERANJANG BELANJAAN</h5>
-                <table class="item">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th scope="col">Kode Barang</th>
-                            <th scope="col">Nama Barang</th>
-                            <th scope="col">Harga</th>
-                            <th scope="col">Jumlah</th>
-                            <th scope="col">Total</th>
-                        </tr>
-                    </thead>
-                    <tbody id="daftar_barang_belanjaan">
-                    </tbody>
-                </table>
-                <form id="keranjang_pembayaran" class="item container column">
-                    <div class="item">
-                        <label class="col-sm-3 col-form-label text-inputs">Masukan uang</label>
-                        <div class="col-sm-6">
-                            <input type="number" name="form_bayar" class="form-control kode_barang" required="yes"
-                                placeholder="Rp.">
-                        </div>
-                    </div>
-                    <div class="item">
-                        <label class="col-sm-3 col-form-label text-inputs">Kembalian</label>
-                        <div class="col-sm-6">
-                            <input type="number" name="form_kembalian" class="form-control kode_barang"
-                                placeholder="Rp." disabled>
-                        </div>
-                    </div>
-                    <div class="item">
-                        <div class="col-md-4">
-                            <button type="submit" id="tombol_bayar" class="btn btn-success btn-block">BAYAR</button>
-                        </div>
-                    </div>
-                </form>
+        </div>
+        <div id="right" class="item container column">
+            <div class="head item container row drag">
+                <h1>Keranjang</h1>
+                <h2>Belanjaan</h2>
             </div>
+            <form id="keranjang_pembayaran" class="item container column">
+                <div class="item">
+                    <label class="col-sm-3 col-form-label text-inputs">Masukan uang</label>
+                    <div class="col-sm-6">
+                        <input type="number" name="form_bayar" class="form-control kode_barang" required="yes"
+                            placeholder="Rp.">
+                    </div>
+                </div>
+                <div class="item">
+                    <label class="col-sm-3 col-form-label text-inputs">Kembalian</label>
+                    <div class="col-sm-6">
+                        <input type="number" name="form_kembalian" class="form-control kode_barang" placeholder="Rp."
+                            disabled>
+                    </div>
+                </div>
+                <div class="item">
+                    <div class="col-md-4">
+                        <button type="submit" id="tombol_bayar" class="btn btn-success btn-block">BAYAR</button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 </body>

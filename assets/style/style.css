@@ -30,6 +30,7 @@ $merah:         #EF476F;
     font-size: 24px;
     border: 0;
     position: relative;
+    user-select: none;
 }
 
 
@@ -76,24 +77,26 @@ $merah:         #EF476F;
     padding: 0;
     margin: 0;
     overflow: hidden;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
     background: $background;
+}
+
+#app > * {
+    height: 100%;
 }
 
 .head {
     margin: 0;
     padding:30px 20px; 
-    flex: 0 !important;
 }
 
 .head > * {
     padding: 0 2px;
     margin: 0;
     font-size: 1.2rem;
+}
+
+#right .head > * {
+    font-size: .8rem;
 }
 
 .head h2 {
@@ -116,4 +119,14 @@ h1,h2,h3,h4 {
 
 .normal,  {
     font-weight: normal;
+}
+
+#left {
+    background: $background2;
+}
+
+#right {
+    max-width: 300px;
+    height: 100%;
+    align-items: center;
 }
