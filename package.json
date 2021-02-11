@@ -27,7 +27,6 @@
         "electron-reload": "^1.5.0",
         "postcss": "^8.2.5",
         "postcss-simple-vars": "^6.0.3",
-        "postcss-vars": "^0.1.0",
         "rollup": "^2.38.5",
         "rollup-plugin-postcss": "^4.0.0",
         "rollup-plugin-terser": "^7.0.2"

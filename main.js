@@ -23,8 +23,8 @@ const createWindow = () => {
         height: 600,
         title: "Aplikasi Kasir",
         show: false,
-        // frame: false,
-        // transparent: true,
+        frame: false,
+        transparent: true,
         webPreferences: {
             contextIsolation: true,
             preload: `${__dirname}/preload.js`
