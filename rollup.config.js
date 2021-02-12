@@ -10,8 +10,6 @@ import {babel} from '@rollup/plugin-babel'
 import postcss from "rollup-plugin-postcss"
 // betulin css
 import autoprefixer from "autoprefixer"
-// buat varible di css
-import postcssSimpleVars from "postcss-simple-vars"
 
 import url from "@rollup/plugin-url"
 
@@ -28,7 +26,9 @@ export default {
     },
     plugins: [
         url(),
-        postcss({plugins: [postcssSimpleVars(), autoprefixer()]}),
+        postcss({
+            plugins: [autoprefixer()]
+        }),
         nodeResolve(),
         commonjs(),
         babel({babelHelpers: "bundled"}),
