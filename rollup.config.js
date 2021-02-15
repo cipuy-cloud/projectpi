@@ -18,9 +18,9 @@ import url from "@rollup/plugin-url"
 const production = !process.env.ROLLUP_WATCH;
 
 export default {
-    input: "src/index.js",
+    input: "src/main/web/index.js",
     output: {
-        file: "public/bundle.js",
+        file: "build/bundle.js",
         format: "iife",
         sourcemap: true
     },

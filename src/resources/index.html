@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self';">
+    <title>Aplikasi Kasir</title>
+</head>
+
+<body>
+    <div id="app" class="container row between">
+        <div id="left" class="item">
+            <div class="head drag">
+                <h1 class="item">Aplikasi</h1>
+                <h2 class="item">Kasir</h2>
+            </div>
+            <div class="body container column around">
+                <form id="cari_barang" class="box item container column between">
+                    <div class="item">
+                        <input placeholder="Kode Barang" type="number" name="kode_barang" class="item" required="yes" />
+                    </div>
+                </form>
+                <form id="input_barang" class="hidden box item container row around">
+                    <div class="item container">
+                        <input placeholder="Nama Barang" class="item" type="text" name="nama_barang"
+                            class="form-control nama_barang" required />
+                    </div>
+                    <div class="item container">
+                        <input placeholder="Harga" class="item" type="number" name="harga" class="form-control harga"
+                            required />
+                    </div>
+                    <div class="item container row">
+                        <button class="btn item" type="submit" id="button">+</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div id="right" class="item">
+            <div class="head drag ">
+                <h1 class="item">Keranjang</h1>
+                <h2 class="item">Belanjaan</h2>
+            </div>
+            <!-- <form id="keranjang_pembayaran" class="item container column"> -->
+            <!-- <div class="item container row"> -->
+            <!-- <label class="item">Masukan uang</label> -->
+            <!-- <div class="item"> -->
+            <!-- <input type="number" name="form_bayar" class="form-control kode_barang" required="yes" -->
+            <!-- placeholder="Rp."> -->
+            <!-- </div> -->
+            <!-- </div> -->
+            <!-- <div class="item container row "> -->
+            <!-- <label class="item">Kembalian</label> -->
+            <!-- <div class="item"> -->
+            <!-- <input type="number" name="form_kembalian" class="form-control kode_barang" placeholder="Rp." -->
+            <!-- disabled> -->
+            <!-- </div> -->
+            <!-- </div> -->
+            <!-- <div class="item"> -->
+            <!-- <button type="submit" id="tombol_bayar" class="btn">BAYAR</button> -->
+            <!-- </div> -->
+            <!-- </form> -->
+        </div>
+    </div>
+</body>
+<script src="../../build/bundle.js"></script>
+
+</html>

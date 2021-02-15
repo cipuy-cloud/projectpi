@@ -1,5 +1,5 @@
 const {contextBridge, ipcRenderer} = require("electron")
-const {GET_MASSAGE, BAYAR_MESSAGE, TAMBAH_MASSAGE} = require("./src/const")
+const {GET_MASSAGE, BAYAR_MESSAGE, TAMBAH_MASSAGE} = require("./const")
 
 // buat jembatan antara electron dan web
 

@@ -34,7 +34,7 @@ class Channel {
     }
 
     async connectDb() {
-        let dir = path.join(__dirname, "..", "assets/db/database.db");
+        let dir = "src/resources/db/database.db";
         const db = await open({
             filename: dir,
             driver: sqlite3.Database,

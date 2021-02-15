@@ -2,7 +2,8 @@ const electron = require('electron')
 const {app, BrowserWindow, Menu} = electron
 const args = process.argv.slice(1)
 const serve = args.some(val => val === "--dev")
-const Channel = require("./src/channel")
+const Channel = require("./channel")
+const path = require("path")
 
 
 let channel = new Channel;
@@ -27,13 +28,14 @@ const createWindow = () => {
         transparent: true,
         webPreferences: {
             contextIsolation: true,
-            preload: `${__dirname}/preload.js`
+            preload: "preload.js"
         }
     });
 
 
 
-    mainWindow.loadURL(`file://${__dirname}/index.html`);
+    let urlDir = path.join("file://", __dirname,"../../", "resources", "index.html")
+    mainWindow.loadURL(urlDir);
 
     mainWindow.once('ready-to-show', () => {
         mainWindow.show()

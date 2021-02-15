@@ -1,5 +1,6 @@
-public/
+build/
+dist/
 .cache/
 node_modules/
 package-lock.json
-assets/db/database.db
+src/resources/db/database.db

@@ -1,5 +1,5 @@
 // import css
-import "../assets/style/style.scss"
+import "../../resources/style/style.scss"
 
 import {Controller, Model, View} from "./App"
 
