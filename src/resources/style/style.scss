@@ -11,10 +11,11 @@
 }
 
 
-$background2:   #E0E1DD; 
+$background2:   #F6F6F6; 
 $background:    #FFFFFF;
-$black:         #293241;
+$black:         #333333;
 $merah:         #EF476F; 
+$merah2:        #FADCD9; 
 
 %font {
     font-family: Quicksand; 
@@ -31,14 +32,22 @@ $merah:         #EF476F;
 }
 
 %p0m0 {
-    padding: 0;
-    margin:0;
+    padding:    0px;
+    margin:     0px;
+}
+
+%widthOverflow {
+    overflow: hidden;
+    height: 100%;
+}
+
+%width {
+    width: 100%;
 }
 
 %heightWidthOverflow {
-    overflow: hidden;
-    height: 100%;
-    width: 100%;
+    @extend %widthOverflow;
+    @extend %width;
 }
 
 
@@ -61,9 +70,110 @@ $merah:         #EF476F;
     @extend %heightWidthOverflow;
     * {
         font-size: .625rem;
+        box-sizing: border-box;
         &:focus { outline: none;}
     }
 }
+
+#right {
+    text-align: center;
+    background: $background;
+    max-width: 300px;
+}
+
+#left {
+    @extend %widthOverflow;
+}
+
+form {
+    &#cari_barang { 
+        max-width: 90%;
+        width: 100%;
+        padding: 5px 15px;
+    }
+}
+
+#list_barang {
+    @extend %p0m0;
+    cursor: pointer;
+    max-width: 90%;
+    width: 100%;
+    margin: 10px auto;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: inherit;
+    li {
+        padding: 8px 15px;
+        transition: background 150ms ease-in-out;
+        &:hover {
+            background: $background2;
+        }
+        > * {
+            font-size: .6rem !important;
+            @extend %fontBold;
+        }
+        #id_barang {
+            opacity: .6;
+        }
+        .price {
+            padding: 5px 15px;
+            border-radius: 5px;
+            border: 2px solid $merah;
+            transition: background 150ms ease-in-out;
+            &:hover {
+                background: $merah;
+                color: $background;
+            }
+        }
+    }
+}
+
+
+#keranjang_barang {
+   @extend #list_barang; 
+   h1 {
+        text-align: left;
+   }
+}
+
+#bayar {
+    .item {
+            margin: 8px 0px;
+    }
+}
+
+
+.btn {
+    @extend %fontBold;
+    padding: 8px 15px;
+    border-radius: 5px;
+    border: 0px;
+    background: $background;
+    cursor: pointer;
+
+    &.big {
+        padding:  10px 15px;
+        border-radius: 8px;
+        @extend .full-width;
+    }
+    &.red {
+        background: $merah;
+        color: $background;
+    }
+}
+
+
+input {
+    display: block;
+    padding: 10px 15px;
+    border-radius: 8px;
+    max-width: 100%;
+    width: 100%;
+    background: $background;
+    border: 1px solid $background2;
+    outline: none;
+}
+
 
 
 
@@ -72,11 +182,19 @@ $merah:         #EF476F;
     -webkit-app-region: drag;
 }
 
+.full-width {
+    @extend %width;
+}
+
 .container {
     display: flex;
-
+    position: relative;
+    overflow: hidden;
     &.between {
         justify-content: space-between;
+    }
+    &.baseline {
+        align-items: baseline;
     }
     &.around {
         justify-content: space-around;
@@ -84,6 +202,9 @@ $merah:         #EF476F;
     }
     &.column {
         flex-direction: column;
+    }
+    &.flex-start {
+        align-items: flex-start;
     }
     &.row {
         flex-direction: row;
@@ -100,90 +221,56 @@ $merah:         #EF476F;
     padding: 20px 0px;
     text-align: center;
     > * {
-        margin: 0px 2px;
+        margin: 0px 3px;
     }
     h2 {
         font-weight: normal !important;
     }
 }
 
-.body {
-    width: 100% !important;
-    max-width: 95% !important;
-    height: auto;
-        margin: auto; 
-    form {
-        width: 100%;
-        margin: 15px auto; 
-    }
-}
 
-#right {
-    text-align: center;
-    background: $background;
-    max-width: 300px;
-}
 
 h1,h2,h3,h4,h5 {
     font-family: Quicksand;
     @extend %fontBold;
     @extend %p0m0;
     font-size: .8rem !important;
-    &.sub {
-        opacity: 0.8;
-        font-size: inherit !important;
-    }
 }
 
 
 .box {
     background: $background;
-    max-width: 90%;
     border-radius: 10px;
     height: auto;
     position: relative;
     margin: auto;
-    padding: 5px 15px;
     box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05);
+    position: relative;
     .item {
-        margin: 8px 0px;
-        input {
-            display: block;
-            padding: 10px 15px;
-            border-radius: 30px;
-            max-width: 100%;
-            width: 100%;
-            background: $background;
-            border: 1px solid $background2;
-            outline: none;
+        margin: 0px 8px;
+        padding: 0px 5px;
+
+    }
+    &.center {
+        .item {
+            margin: 8px auto;
         }
-
-    }
-}
-
-input {
-    box-sizing: border-box;
-    display: block;
+    } 
 }
 
 
-
-// .hidden {
-    // display: none;
-// }
-
-.btn {
-    @extend %fontBold;
-    background: $merah;
-    padding: 8px 0px;
-    width: fit-content;
-    border-radius: 8px;
-    color: $background;
-    border: none;
-    box-shadow: none;
-    margin-bottom: 0px !important;
-    &:active, &:hover {
-        @extend .btn;
-        cursor: pointer;
-    }
+.padding-md {
+        padding: 20px;
 }
+
+
+.center { 
+    text-align: center;
+}
+.left { 
+    text-align: left;
+}
+.right { 
+    text-align: right;
+}
+

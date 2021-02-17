@@ -13,8 +13,12 @@ channel.listen()
 
 let mainWindow
 
+
+const _root = path.join(__dirname, "..", "..")
+
 if (serve) {
-    require('electron-reload')(__dirname);
+    const all = path.join(_root, "..")
+    require('electron-reload')(all)
 }
 
 
@@ -34,8 +38,7 @@ const createWindow = () => {
 
 
 
-    let urlDir = path.join("file://", __dirname,"../../", "resources", "index.html")
-    mainWindow.loadURL(urlDir);
+    mainWindow.loadURL(`file://${_root}/resources/index.html`);
 
     mainWindow.once('ready-to-show', () => {
         mainWindow.show()

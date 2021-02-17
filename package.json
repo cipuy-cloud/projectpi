@@ -37,8 +37,8 @@
         "sqlite3": "^5.0.1"
     },
     "build": {
-        "productName": "programkasir",
-        "appId": "com.cipuy-cloud.programkasir",
+        "productName": "Program Kasir",
+        "appId": "com.cipuy-cloud.Program_Kasir",
         "win": {
             "target": [
                 "nsis"

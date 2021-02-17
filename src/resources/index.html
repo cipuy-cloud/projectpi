@@ -9,58 +9,65 @@
 
 <body>
     <div id="app" class="container row between">
-        <div id="left" class="item">
-            <div class="head drag">
-                <h1 class="item">Aplikasi</h1>
-                <h2 class="item">Kasir</h2>
+        <div id="left" class="item container column ">
+            <div class="drag head">
+                <h1>Aplikasi</h1>
+                <h2>Kasir</h2>
             </div>
-            <div class="body container column around">
-                <form id="cari_barang" class="box item container column between">
+            <div class="container column">
+                <form id="cari_barang" class="box center">
                     <div class="item">
-                        <input placeholder="Kode Barang" type="number" name="kode_barang" class="item" required="yes" />
+                        <input type="number" placeholder="Cari barang" />
                     </div>
                 </form>
-                <form id="input_barang" class="hidden box item container row around">
-                    <div class="item container">
-                        <input placeholder="Nama Barang" class="item" type="text" name="nama_barang"
-                            class="form-control nama_barang" required />
-                    </div>
-                    <div class="item container">
-                        <input placeholder="Harga" class="item" type="number" name="harga" class="form-control harga"
-                            required />
-                    </div>
-                    <div class="item container row">
-                        <button class="btn item" type="submit" id="button">+</button>
-                    </div>
-                </form>
+                <ul id="list_barang" class="item list box">
+                    <li class="container row baseline between">
+                        <form id="input_barang" class="full-width container row baseline between">
+                            <span id="id_barang">ID: 12384924</span>
+                            <div class="item center">
+                                <input type="text" placeholder="Nama Barang" />
+                            </div>
+                            <div class="item center">
+                                <input type="number" placeholder="Harga Barang" />
+                            </div>
+                            <div class="item right">
+                                <button type="submit" class="btn red">+</button>
+                            </div>
+                        </form>
+                    </li>
+
+                    <li class="container row baseline between">
+                        <span id="id_barang">ID: 12384924</span>
+                        <h1>Saniter Fabric Disinfectant 200+30ml</h1>
+                        <h3 class="price">+ Rp 120.000</h3>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+        <div id="right" class="item ">
+            <div class="drag head">
+                <h1>Kerajang</h1>
+                <h2>Belanja</h2>
+            </div>
+            <div class="container column between">
+                <ul id="keranjang_barang" class=" list box">
+                    <li class="container row baseline between">
+                        <h1>Saniter Fabric Disinfectant 200+30ml</h1>
+                        <h3 class="price">Rp 120.000</h3>
+                    </li>
+                </ul>
+                <div class="item padding-md">
+                    <form id="bayar" class="container column between baseline">
+                        <div class="total container row between full-width">
+                            <h1 class="item left">Total</h1>
+                            <h3 class="item right">Rp 120.000</h3>
+                        </div>
+                        <button type="submit" class="item btn red big">Bayar</button>
+                    </form>
+                </div>
             </div>
         </div>
-        <div id="right" class="item">
-            <div class="head drag ">
-                <h1 class="item">Keranjang</h1>
-                <h2 class="item">Belanjaan</h2>
-            </div>
-            <!-- <form id="keranjang_pembayaran" class="item container column"> -->
-            <!-- <div class="item container row"> -->
-            <!-- <label class="item">Masukan uang</label> -->
-            <!-- <div class="item"> -->
-            <!-- <input type="number" name="form_bayar" class="form-control kode_barang" required="yes" -->
-            <!-- placeholder="Rp."> -->
-            <!-- </div> -->
-            <!-- </div> -->
-            <!-- <div class="item container row "> -->
-            <!-- <label class="item">Kembalian</label> -->
-            <!-- <div class="item"> -->
-            <!-- <input type="number" name="form_kembalian" class="form-control kode_barang" placeholder="Rp." -->
-            <!-- disabled> -->
-            <!-- </div> -->
-            <!-- </div> -->
-            <!-- <div class="item"> -->
-            <!-- <button type="submit" id="tombol_bayar" class="btn">BAYAR</button> -->
-            <!-- </div> -->
-            <!-- </form> -->
-        </div>
-    </div>
 </body>
 <script src="../../build/bundle.js"></script>
 
