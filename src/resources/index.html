@@ -20,10 +20,10 @@
                         <input type="number" placeholder="Cari barang" />
                     </div>
                 </form>
-                <ul id="list_barang" class="item list box">
+                <ul id="list_barang" class="box">
                     <li class="container row baseline between">
                         <form id="input_barang" class="full-width container row baseline between">
-                            <span id="id_barang">ID: 12384924</span>
+                            <span id="id_barang" class="left">ID: 12384924</span>
                             <div class="item center">
                                 <input type="text" placeholder="Nama Barang" />
                             </div>
@@ -38,27 +38,34 @@
 
                     <li class="container row baseline between">
                         <span id="id_barang">ID: 12384924</span>
-                        <h1>Saniter Fabric Disinfectant 200+30ml</h1>
-                        <h3 class="price">+ Rp 120.000</h3>
+                        <div class="item">
+                            <h1 class="left">Saniter Fabric Disinfectant 200+30ml</h1>
+                        </div>
+                        <h3 class="price">Rp 120.000</h3>
                     </li>
                 </ul>
             </div>
 
         </div>
-        <div id="right" class="item ">
-            <div class="drag head">
+        <div id="right" class="item container column between">
+            <div class="item drag head">
                 <h1>Kerajang</h1>
                 <h2>Belanja</h2>
             </div>
-            <div class="container column between">
-                <ul id="keranjang_barang" class=" list box">
+            <div class="item container column between">
+                <ul id="keranjang_barang" class="item">
                     <li class="container row baseline between">
-                        <h1>Saniter Fabric Disinfectant 200+30ml</h1>
-                        <h3 class="price">Rp 120.000</h3>
+                        <h1 class="item">Saniter Fabric Disinfectant 200+30ml</h1>
+                        <h3 class="item price">
+                            Rp 120.000
+                        </h3>
                     </li>
                 </ul>
-                <div class="item padding-md">
+                <div class="auto full-width padding-md">
                     <form id="bayar" class="container column between baseline">
+                        <div class="item center full-width">
+                            <input class="full-width" type="text" placeholder="Total Pembayaran" />
+                        </div>
                         <div class="total container row between full-width">
                             <h1 class="item left">Total</h1>
                             <h3 class="item right">Rp 120.000</h3>
