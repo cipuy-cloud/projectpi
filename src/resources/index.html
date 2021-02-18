@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self';">
+    <title>Aplikasi Kasir</title>
+</head>
+
+<body>
+    <div id="app" class="container row between">
+        <div id="left" class="item container column ">
+            <div class="drag head">
+                <h1>Aplikasi</h1>
+                <h2>Kasir</h2>
+            </div>
+            <div class="container column">
+                <form id="cari_barang" class="box center">
+                    <div class="item">
+                        <input type="number" placeholder="Cari barang" />
+                    </div>
+                </form>
+                <ul id="list_barang" class="item list box">
+                    <li class="container row baseline between">
+                        <form id="input_barang" class="full-width container row baseline between">
+                            <span id="id_barang">ID: 12384924</span>
+                            <div class="item center">
+                                <input type="text" placeholder="Nama Barang" />
+                            </div>
+                            <div class="item center">
+                                <input type="number" placeholder="Harga Barang" />
+                            </div>
+                            <div class="item right">
+                                <button type="submit" class="btn red">+</button>
+                            </div>
+                        </form>
+                    </li>
+
+                    <li class="container row baseline between">
+                        <span id="id_barang">ID: 12384924</span>
+                        <h1>Saniter Fabric Disinfectant 200+30ml</h1>
+                        <h3 class="price">+ Rp 120.000</h3>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+        <div id="right" class="item ">
+            <div class="drag head">
+                <h1>Kerajang</h1>
+                <h2>Belanja</h2>
+            </div>
+            <div class="container column between">
+                <ul id="keranjang_barang" class=" list box">
+                    <li class="container row baseline between">
+                        <h1>Saniter Fabric Disinfectant 200+30ml</h1>
+                        <h3 class="price">Rp 120.000</h3>
+                    </li>
+                </ul>
+                <div class="item padding-md">
+                    <form id="bayar" class="container column between baseline">
+                        <div class="total container row between full-width">
+                            <h1 class="item left">Total</h1>
+                            <h3 class="item right">Rp 120.000</h3>
+                        </div>
+                        <button type="submit" class="item btn red big">Bayar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+</body>
+<script src="../../build/bundle.js"></script>
+
+</html>
