@@ -10,6 +10,8 @@ channel.listen()
 
 let mainWindow
 
+let newWindow
+
 if (serve) {
     require('electron-reload')(__dirname);
 }
@@ -36,6 +38,30 @@ const createWindow = () => {
     })
 }
 
+  const OpenDataBarang = ()=> {
+    if (newWindow) {
+      newWindow.focusedWindow()
+      return
+    }
+
+    newWindow = new BrowserWindow ({
+      height: 439,
+      width: 599,
+      title: 'DataBarang',
+      show: false,
+
+    })
+
+    newWindow.loadURL(`file://${__dirname}/src/databarang.html`);
+
+    newWindow.once('ready-to-show', () => {
+    newWindow.show()
+  })
+    newWindow.on('closed', () => {
+    newWindow = null
+  })
+}
+
 
 app.on('ready', async () => {
     createWindow()
@@ -52,6 +78,7 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
     if (mainWindow === null) {
         createWindow()
+        newWindow()
     }
 })
 
@@ -61,16 +88,8 @@ function setMainMenu() {
         label: 'File',
         submenu: [
           {
-            label: 'New Data'
-          },
-          {
-            label: 'Open Data'
-          },
-          {
-            label: 'Edit Data'
-          },
-          {
-            label: 'Delete Data'
+            label: 'Data Barang',
+            click: ()=> OpenDataBarang()
           },
         ]
       },
