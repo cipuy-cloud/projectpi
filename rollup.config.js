@@ -31,7 +31,9 @@ export default {
         }),
         nodeResolve(),
         commonjs(),
-        babel({babelHelpers: "bundled"}),
+        babel({
+            babelHelpers: "bundled"
+        }),
         production && terser()
     ]
 }

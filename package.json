@@ -12,7 +12,8 @@
         "watch:rollup": "rollup -c -w",
         "watch:electron": "electron . --dev",
         "start": "electron .",
-        "package": "rimraf ./build && rollup -c && electron-builder build --publish never"
+        "package": "npm run clean && rollup -c && electron-builder build --publish never",
+        "clean": "rimraf ./build"
     },
     "author": "David Barnabas",
     "license": "ISC",

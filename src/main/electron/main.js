@@ -81,7 +81,7 @@ const createWindowDataBarang = () => {
 
 
     dataBarangWindow = new BrowserWindow({
-        width: 400,
+        width: 600,
         height: 600,
         title: "Data Barang",
         x,

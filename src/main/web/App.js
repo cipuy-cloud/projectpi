@@ -8,113 +8,79 @@ class Controller {
 
 
     async run() {
-        this.view.handlerDaftarList(await this.model.daftar_barang)
-        this.view.initFormListener(async (val) => {
-            this.model.tambah(val)
-            this.view.handlerDaftarList(await this.model.daftar_barang)
-        })
-        this.view.listenerKeranjangBelanjaan(async () => {
-            let is_success = await this.model.bayar()
-            if (is_success) {
-                this.view.table.reset()
-            }
-        })
+        console.log("Running Program")
+        this.initial()
+    }
+
+
+    initial() {
+        this.view.render_barang()
     }
 }
 
 class View {
+
+
     constructor() {
-        // this.form = document.getElementById("form_tambah_keranjang")
-        // this.table = document.getElementById("daftar_barang_belanjaan")
-        // this.kodebarang = this.form.elements["kode_barang"]
-        // this.namabarang = this.form.elements["nama_barang"]
-        // this.jumlah_barang = this.form.elements["jumlah_barang"]
-        // this.harga = this.form.elements["harga"];
-        // this.total = document.getElementById("total_harga_barang")
-        // this.total_display = document.querySelector(".total_harga")
-        // this.total_harga_barang = 0
-        // this.form_keranjang_belanjaan = document.getElementById("keranjang_pembayaran")
-        // this.form_bayar = this.form_keranjang_belanjaan.elements["form_bayar"]
-        // this.form_kembali = this.form_keranjang_belanjaan.elements["form_kembalian"]
-        this.handlerBayar()
-    }
+        // initial
+        this.cari_barang = document.getElementById("cari_barang")
+        this.form_cari = this.cari_barang.elements[0]
+        this.list_barang = document.getElementById("list_barang")
 
+        this.cari_barang.addEventListener("submit", ev => {
+            ev.preventDefault()
+        })
 
-    handlerDaftarList(daftar_barang) {
-    }
-
-    async listenerKeranjangBelanjaan(constroller_event_bayar) {
-        this.form_keranjang_belanjaan.addEventListener("submit", (event) => {
-            event.preventDefault()
-            if (this.form_kembali.value < 0) {
-                alert("pembayaran kurang")
-            } else {
-                constroller_event_bayar()
+        this.form_cari.addEventListener("keyup", ev => {
+            if (ev.target.value) {
+                let barang = window.data_barang.find((t) => t.id === parseInt(ev.target.value))
+                if (barang) {
+                    this.render_barang([barang])
+                } else {
+                    this.render_barang()
+                }
             }
-
         })
     }
 
-    handlerBayar() {
-        this.form_bayar.onchange = () => {
-            this.form_kembali.value = this.form_bayar.value - this.total_harga_barang;
-        }
+
+    render_barang(filter_barang = []) {
+        let isEmpty = filter_barang.length === 0
+        let data = isEmpty ? window.data_barang : filter_barang
+        let li = data.map((barang) => {
+
+            let uang = new Intl.NumberFormat("id-ID", {
+                style: "currency",
+                currency: "IDR"
+            }).format(barang.harga)
+
+            return `
+                <li id="${barang.id}" class="container row baseline between">
+                    <span id="id_barang">ID: ${barang.id}</span>
+                        <div class="item">
+                            <h1 class="left">${barang.nama_barang}</h1>
+                        </div>
+                    <h3 class="price">${uang}</h3>
+                </li>
+            `.trim()
+        })
+
+        this.list_barang.innerHTML = li.join(" ")
     }
 
-    handleOnChangeHarga() {
-        if (this.jumlah_barang.value > 0 && this.harga.value > 0) {
-            this.total.value = (this.jumlah_barang.value * this.harga.value).toLocaleString()
 
-            this.total_display.innerText = (this.jumlah_barang.value * this.harga.value).toLocaleString()
-        }
-    }
-
-    initFormListener(controller_push) {
-        this.total_display.innerText = ""
-        this.jumlah_barang.value = 0
-        this.harga.value = 0
-        this.jumlah_barang.onchange = () => this.handleOnChangeHarga()
-        this.harga.onchange = () => this.handleOnChangeHarga()
-
-        this.form.addEventListener("submit", (event) => {
-            event.preventDefault();
-            controller_push(
-                {
-                    kodebarang: this.kodebarang.value,
-                    namabarang: this.namabarang.value,
-                    harga: this.harga.value,
-                    jumlah: this.jumlah_barang.value,
-                }
-            )
-            this.form.reset();
-            this.total_display.innerText = ""
-        });
-    }
 }
 
 
 
 
 class Model {
-
     constructor() {
-        this.daftar_barang = this.all() ?? [];
+        window.data_barang = [
+            {id: 323, nama_barang: "Saniter Fabric Disinfectant 200+30ml", harga: 120000},
+            {id: 13, nama_barang: "dummy", harga: 1233434, },
+        ]
     }
-
-
-    async tambah(barang) {
-        let result = await window.api.tambah(barang)
-        this.daftar_barang.push(result);
-    }
-
-    async bayar() {
-        await window.api.bayar()
-    }
-
-    async all() {
-        return await window.api.barang()
-    }
-
 }
 
 
