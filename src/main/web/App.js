@@ -1,5 +1,4 @@
 
-
 class Controller {
     constructor(view, model) {
         this.view = view;
@@ -8,13 +7,15 @@ class Controller {
 
 
     async run() {
-        console.log("Running Program")
         this.initial()
     }
 
+    barang() {
+        return this.model.data_barang
+    }
 
     initial() {
-        this.view.render_barang()
+        this.view.render_barang(this.barang)
     }
 }
 
@@ -27,32 +28,28 @@ class View {
         this.form_cari = this.cari_barang.elements[0]
         this.list_barang = document.getElementById("list_barang")
 
+
+        // event
         this.cari_barang.addEventListener("submit", ev => {
             ev.preventDefault()
         })
 
-        this.form_cari.addEventListener("keyup", ev => {
-            if (ev.target.value) {
-                let barang = window.data_barang.find((t) => t.id === parseInt(ev.target.value))
-                if (barang) {
-                    this.render_barang([barang])
-                } else {
-                    this.render_barang()
-                }
+        this.form_cari.addEventListener("keyup", ({target}) => {
+            if (target.value) {
+                let barang = window.data_barang.find((t) => t.id === parseInt(target.value))
+
+                barang ? this.render_barang([barang]) : this.render_barang()
             }
         })
     }
 
 
-    render_barang(filter_barang = []) {
-        let isEmpty = filter_barang.length === 0
-        let data = isEmpty ? window.data_barang : filter_barang
-        let li = data.map((barang) => {
+    render_barang(data_barang = []) {
+        // let data = data_barang ?? window.data_barang
 
-            let uang = new Intl.NumberFormat("id-ID", {
-                style: "currency",
-                currency: "IDR"
-            }).format(barang.harga)
+        this.list_barang.innerHTML = data.map((barang) => {
+
+            let uang = new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR"}).format(barang.harga)
 
             return `
                 <li id="${barang.id}" class="container row baseline between">
@@ -63,9 +60,8 @@ class View {
                     <h3 class="price">${uang}</h3>
                 </li>
             `.trim()
-        })
+        }).join(" ")
 
-        this.list_barang.innerHTML = li.join(" ")
     }
 
 
@@ -76,10 +72,6 @@ class View {
 
 class Model {
     constructor() {
-        window.data_barang = [
-            {id: 323, nama_barang: "Saniter Fabric Disinfectant 200+30ml", harga: 120000},
-            {id: 13, nama_barang: "dummy", harga: 1233434, },
-        ]
     }
 }
 

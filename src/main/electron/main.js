@@ -4,10 +4,10 @@ const args = process.argv.slice(1)
 const serve = args.some(val => val === "--dev")
 const Channel = require("./channel")
 const path = require("path")
-const {data} = require('autoprefixer')
+const {DB} = require("./env")
 
 
-let channel = new Channel;
+let channel = new Channel(DB);
 
 channel.listen()
 
@@ -45,6 +45,7 @@ const createWindow = () => {
         mainWindow.show()
     })
     mainWindow.on('closed', () => {
+        channel.close()
         mainWindow = null
     })
 }

@@ -1,6 +1,0 @@
-
-module.exports = {
-    TAMBAH_MASSAGE: 'TAMBAH_MASSAGE',
-    GET_MASSAGE: 'GET_MASSAGE',
-    BAYAR_MESSAGE: 'BAYAR_MESSAGE'
-}

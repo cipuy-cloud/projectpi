@@ -29,7 +29,7 @@ export default {
         postcss({
             plugins: [autoprefixer()]
         }),
-        nodeResolve(),
+        nodeResolve({browser: true}),
         commonjs(),
         babel({
             babelHelpers: "bundled"
