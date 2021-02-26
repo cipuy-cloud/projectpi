@@ -67,23 +67,22 @@ class Channel {
 class Database {
     constructor(db) {
         this.db_name = null;
-        this.err = {
-            status: false,
-            result: null
-        }
         this.db = db;
     }
 
+    pesan({status = false, result = null, err = null}) {
+        return {
+            status,
+            result,
+            err
+        }
+    }
     async handling(cb) {
         try {
             let result = await cb();
-            console.log(result)
-            return {
-                status: true,
-                result
-            }
-        } catch (e) {
-            return this.err
+            return this.pesan({status: true, result})
+        } catch (err) {
+            return this.pesan({err})
         }
     }
 
@@ -96,8 +95,12 @@ class Database {
         return true;
     }
 
-    async getByID(id) {
-        return this.err
+    getByID(id) {
+        return this.handling(async () => {
+            let result = await this.db.get(`SELECT * from ${this.db_name} WHERE id = ${id}`)
+            return result
+
+        })
     }
 
     insert(arg) {
@@ -116,18 +119,16 @@ class Barang extends Database {
         await this.db.exec(`CREATE TABLE IF NOT EXISTS ${this.db_name}(id INTEGER PRIMARY KEY, kodebarang INTEGER NOT NULL UNIQUE, namabarang TEXT NOT NULL, harga INT NOT NULL, stok INT NOT NULL)`)
     }
 
-    getByID(id) {
-        this.handling(async () => {
-            let result = await this.db.get(`SELECT * from ${this.db_name} WHERE id = ${id}`)
-            return result
-        })
 
-    }
-
-    async insert(arg) {
-        return await this.handling(async () => {
+    insert(arg) {
+        return this.handling(async () => {
             let {kodebarang, namabarang, harga, stok} = arg;
-            let result = await this.db.exec(`INSERT INTO ${this.db_name}(kodebarang, namabarang, harga, stok) VALUES(${kodebarang}, ${namabarang}, ${harga}, ${stok})`)
+            let result = await this.db.run(`INSERT INTO ${this.db_name}(kodebarang, namabarang, harga, stok) VALUES(:kodebarang, :namabarang, :harga, :stok)`, {
+                ":kodebarang": kodebarang,
+                ":namabarang": namabarang,
+                ":harga": harga,
+                ":stok": stok
+            })
             return result
         })
 
@@ -146,7 +147,7 @@ class Keranjang extends Database {
     }
 
     insert(arg) {
-        this.handling(async () => {
+        return this.handling(async () => {
             let {transaksi_id, data_barang_id} = arg;
             let result = await this.db.run(`INSERT INTO ${this.db_name}(transaksi_id, data_barang_id) VALUES(${transaksi_id}, ${data_barang_id})`)
             return result
@@ -166,7 +167,7 @@ class Transaksi extends Database {
     }
 
     insert(arg) {
-        this.handling(async () => {
+        return this.handling(async () => {
             let result = await this.db.run(`INSERT INTO ${this.db_name} DEFAULT VALUES`)
             return result
         })
