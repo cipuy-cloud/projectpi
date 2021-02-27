@@ -11,14 +11,14 @@ describe('Database', function () {
     let data_barang_id;
     let transaksi_id;
 
-    before(() => {
-        dummy = new Channel("test/dummy.db")
+    before(async () => {
+        dummy = await Channel.build("test/dummy.db")
     })
 
     it('menghitung jumlah db', async () => {
-        let {count} = await dummy.db.get("SELECT COUNT(*) as count from sqlite_master where type='table'")
-
-        assert.equal(count, 3)
+        let {status, result} = await dummy.dao?.get("SELECT COUNT(*) as count from sqlite_master where type='table'")
+        assert.equal(status, true)
+        assert.equal(result.count, 3)
     })
 
     describe("Barang", function () {
@@ -29,8 +29,8 @@ describe('Database', function () {
             stok: 2
         }
         it('masukin barang', async () => {
-            const {result: {lastID}, status} = await dummy.barang.insert(barang)
-            data_barang_id = lastID
+            const {status, result} = await dummy.barang.insert(barang)
+            data_barang_id = result.lastID
             assert.equal(status, true)
         })
 
@@ -49,8 +49,8 @@ describe('Database', function () {
 
     describe("Transaksi", function () {
         it("buat transaksi", async () => {
-            const {result: {lastID}, status} = await dummy.transaksi.insert()
-            transaksi_id = lastID
+            const {status, result} = await dummy.transaksi.insert()
+            transaksi_id = result.lastID
             assert.equal(status, true)
         })
         it('print transaksi dengan id', async () => {

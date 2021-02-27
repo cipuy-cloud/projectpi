@@ -4,27 +4,25 @@ const {open} = require("sqlite")
 
 
 class Channel {
-    constructor(path) {
-        this.path = path
-        this.db;
-        (async () => {
-            this.db = await this.connectDb()
+    constructor(db) {
+        this.dao = new Dao(db)
+        // aktifin buat relasi antara database di sqlite
+        this.dao.exec("PRAGMA foreign_keys = ON")
 
-            // aktifin buat relasi antara database di sqlite
-            this.db.exec("PRAGMA foreign_keys = ON")
-
-            this.table = [
-                new Barang(this.db),
-                new Keranjang(this.db),
-                new Transaksi(this.db)
-            ]
-            this.initialDb()
-            this.barang = this.table[0]
-            this.keranjang = this.table[1]
-            this.transaksi = this.table[2]
-        })()
+        this.table = [
+            new Barang(this.dao),
+            new Keranjang(this.dao),
+            new Transaksi(this.dao)
+        ]
+        this.initialDb()
+        this.barang = this.table[0]
+        this.keranjang = this.table[1]
+        this.transaksi = this.table[2]
     }
-
+    static async build(path) {
+        let db = await Channel.connectDb(path)
+        return new Channel(db)
+    }
 
     listen() {
         ipcMain.handle(TAMBAH_MASSAGE, (_event, kodebarang, namabarang, harga, jumlah) => {
@@ -39,9 +37,9 @@ class Channel {
         })
     }
 
-    async connectDb() {
+    static async connectDb(path) {
         const db = await open({
-            filename: this.path,
+            filename: path,
             driver: sqlite3.Database,
         })
 
@@ -49,9 +47,8 @@ class Channel {
     }
 
     initialDb() {
-
-        this.table.forEach((query) => {
-            query.create()
+        this.table.forEach(async (query) => {
+            await query.create()
         })
     }
 
@@ -60,117 +57,120 @@ class Channel {
         for (let i in this.table) {
             delete this.table[i]
         }
+        this.dao.close()
+    }
+}
+
+
+
+const pesan = ({status = false, result = null, err = null}) => {
+    return {status, result, err}
+}
+
+const handling = async (cb, query) => {
+    try {
+        let result = await cb()
+        return pesan({status: true, result})
+    } catch (err) {
+        return pesan({err})
+    }
+
+}
+
+
+class Dao {
+    constructor(db) {
+        this.db = db;
+    }
+
+
+    async exec(query) {
+        await handling(() => this.db.exec(query))
+    }
+
+    async get(query) {
+        return await handling(() => this.db.get(query))
+    }
+
+    async all(query) {
+        return await handling(() => this.db.all(query))
+    }
+
+    async run(query) {
+        return await handling(() => this.db.run(query))
+    }
+    close() {
         this.db.close()
     }
 }
 
-class Database {
-    constructor(db) {
-        this.db_name = null;
-        this.db = db;
-    }
 
-    pesan({status = false, result = null, err = null}) {
-        return {
-            status,
-            result,
-            err
-        }
-    }
-    async handling(cb) {
-        try {
-            let result = await cb();
-            return this.pesan({status: true, result})
-        } catch (err) {
-            return this.pesan({err})
-        }
-    }
 
+
+class Table {
+    name = null
+    dao = null
+    constructor(dao) {
+        this.dao = dao
+    }
+    async create() {}
+    async insert() {}
+
+    async getByID(id) {
+        return await this.dao?.get(`SELECT * from ${this.name} WHERE id = ${id}`)
+    }
     async all() {
-        let data = await this.db.all(`SELECT * from ${this.db_name}`)
-        return data
-    }
-
-    async create() {
-        return true;
-    }
-
-    getByID(id) {
-        return this.handling(async () => {
-            let result = await this.db.get(`SELECT * from ${this.db_name} WHERE id = ${id}`)
-            return result
-
-        })
-    }
-
-    insert(arg) {
-        return this.err
+        return await this.dao?.all(`SELECT * from ${this.name}`)
     }
 }
 
 
-class Barang extends Database {
-    constructor(db) {
-        super(db);
-        this.db_name = "data_barang"
+
+class Barang extends Table {
+    name = "barang"
+    constructor(dao) {
+        super(dao);
     }
 
     async create() {
-        await this.db.exec(`CREATE TABLE IF NOT EXISTS ${this.db_name}(id INTEGER PRIMARY KEY, kodebarang INTEGER NOT NULL UNIQUE, namabarang TEXT NOT NULL, harga INT NOT NULL, stok INT NOT NULL)`)
+        await this.dao?.exec(`CREATE TABLE IF NOT EXISTS ${this.name}(id INTEGER PRIMARY KEY, kodebarang INTEGER NOT NULL UNIQUE, namabarang TEXT NOT NULL, harga INT NOT NULL, stok INT NOT NULL)`)
     }
 
 
-    insert(arg) {
-        return this.handling(async () => {
-            let {kodebarang, namabarang, harga, stok} = arg;
-            let result = await this.db.run(`INSERT INTO ${this.db_name}(kodebarang, namabarang, harga, stok) VALUES(:kodebarang, :namabarang, :harga, :stok)`, {
-                ":kodebarang": kodebarang,
-                ":namabarang": namabarang,
-                ":harga": harga,
-                ":stok": stok
-            })
-            return result
-        })
+    async insert({kodebarang, namabarang, harga, stok}) {
+        return await this.dao?.run(`INSERT INTO ${this.name}(kodebarang, namabarang, harga, stok) VALUES(${kodebarang}, '${namabarang}', ${harga}, ${stok})`)
 
     }
 }
 
 
-class Keranjang extends Database {
-    constructor(db) {
-        super(db);
-        this.db_name = "keranjang"
+class Keranjang extends Table {
+    name = "keranjang"
+    constructor(dao) {
+        super(dao);
     }
 
     async create() {
-        await this.db.exec(`CREATE TABLE IF NOT EXISTS ${this.db_name}(id INTEGER PRIMARY KEY, transaksi_id INTEGER NOT NULL, data_barang_id INTEGER, FOREIGN KEY(transaksi_id) REFERENCES transaksi(id), FOREIGN KEY(data_barang_id) REFERENCES data_barang(id) ON UPDATE CASCADE ON DELETE SET NULL)`)
+        await this.dao?.exec(`CREATE TABLE IF NOT EXISTS ${this.name} (id INTEGER PRIMARY KEY, transaksi_id INTEGER NOT NULL, data_barang_id INTEGER, FOREIGN KEY(transaksi_id) REFERENCES transaksi(id), FOREIGN KEY(data_barang_id) REFERENCES data_barang(id) ON UPDATE CASCADE ON DELETE SET NULL)`)
     }
 
-    insert(arg) {
-        return this.handling(async () => {
-            let {transaksi_id, data_barang_id} = arg;
-            let result = await this.db.run(`INSERT INTO ${this.db_name}(transaksi_id, data_barang_id) VALUES(${transaksi_id}, ${data_barang_id})`)
-            return result
-        })
+    async insert({transaksi_id, data_barang_id}) {
+        return await this.dao?.run(`INSERT INTO ${this.name} (transaksi_id, data_barang_id) VALUES(${transaksi_id}, ${data_barang_id})`)
     }
 }
 
-
-class Transaksi extends Database {
-    constructor(db) {
-        super(db);
-        this.db_name = "transaksi"
+class Transaksi extends Table {
+    name = "transaksi"
+    constructor(dao) {
+        super(dao);
     }
 
     async create() {
-        await this.db.exec(`CREATE TABLE IF NOT EXISTS ${this.db_name}(id INTEGER PRIMARY KEY, waktu DATETIME DEFAULT CURRENT_TIMESTAMP)`)
+        await this.dao?.exec(`CREATE TABLE IF NOT EXISTS ${this.name} (id INTEGER PRIMARY KEY, waktu DATETIME DEFAULT CURRENT_TIMESTAMP)`)
     }
 
-    insert(arg) {
-        return this.handling(async () => {
-            let result = await this.db.run(`INSERT INTO ${this.db_name} DEFAULT VALUES`)
-            return result
-        })
+    async insert() {
+        return await this.dao?.run(`INSERT INTO ${this.name} DEFAULT VALUES`)
     }
 }
 
