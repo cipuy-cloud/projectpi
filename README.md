@@ -25,3 +25,12 @@ To package apps for the local platform:
 npm run package
 ```
 
+
+## Testing 
+
+Using mocha.js for testing
+
+```bash
+npm test 
+```
+
