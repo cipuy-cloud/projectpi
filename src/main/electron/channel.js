@@ -1,15 +1,29 @@
 const {ipcMain} = require("electron")
-const sqlite3 = require("sqlite3")
-const {open} = require("sqlite")
+const Database = require("better-sqlite3")
 
+
+const connect = (path) => new Database(path)
+
+
+const pesan = ({status = false, result = null, err = null}) => {
+    return {status, result, err}
+}
+
+const handling = (cb) => {
+    try {
+        let result = cb()
+        return pesan({status: true, result})
+    } catch (err) {
+        return pesan({err})
+    }
+
+}
 
 
 class Channel {
-    constructor(db) {
+    constructor(path) {
+        let db = connect(path)
         this.dao = new Dao(db)
-        // aktifin buat relasi antara database di sqlite
-        this.dao.exec("PRAGMA foreign_keys = ON")
-
         this.table = [
             new Barang(this.dao),
             new Keranjang(this.dao),
@@ -19,10 +33,6 @@ class Channel {
         this.barang = this.table[0]
         this.keranjang = this.table[1]
         this.transaksi = this.table[2]
-    }
-    static async build(path) {
-        let db = await Channel.connectDb(path)
-        return new Channel(db)
     }
 
     listen() {
@@ -38,80 +48,53 @@ class Channel {
         })
     }
 
-    static async connectDb(path) {
-        const db = await open({
-            filename: path,
-            driver: sqlite3.Database,
-        })
-
-        return db;
-    }
-
     initialDb() {
         this.table.forEach((query) => {
             query.create()
         })
     }
 
-    async make_success(transaksi_id) {
-        const transaksi = await this.transaksi.update()
-
-        if (transaksi.err) {
-            return transaksi
-        }
-
-
-    }
-
     close() {
         for (let i in this.table) {
             delete this.table[i]
         }
-        this.dao.close()
     }
-}
-
-
-
-const pesan = ({status = false, result = null, err = null}) => {
-    return {status, result, err}
-}
-
-const handling = async (cb, query) => {
-    try {
-        let result = await cb()
-        return pesan({status: true, result})
-    } catch (err) {
-        return pesan({err})
-    }
-
 }
 
 
 class Dao {
     constructor(db) {
         this.db = db;
+        this.db.pragma("foreign_keys = ON")
+
     }
 
 
-    async exec(query) {
+    exec(query) {
         return handling(() => this.db.exec(query))
     }
 
-    async get(query) {
-        return handling(() => this.db.get(query))
+    get(query) {
+        return handling(() => {
+            const stmt = this.db.prepare(query)
+            return stmt.get()
+        })
     }
 
-    async all(query) {
-        return handling(() => this.db.all(query))
+    all(query) {
+        return handling(() => {
+            const stmt = this.db.prepare(query)
+            return stmt.all()
+        })
     }
 
 
-    async run(query) {
-        return handling(() => this.db.run(query))
-    }
-    close() {
-        this.db.close()
+    run(query) {
+        return handling(() => {
+            const stmt = this.db.prepare(query)
+            return stmt.run()
+
+        })
     }
 }
 
@@ -124,13 +107,13 @@ class Table {
     constructor(dao) {
         this.dao = dao
     }
-    async create() {}
-    async insert() {}
+    create() {}
+    insert() {}
 
-    async getByID(id) {
+    getByID(id) {
         return this.dao?.get(`SELECT * from ${this.name} WHERE id = ${id}`)
     }
-    async all() {
+    all() {
         return this.dao?.all(`SELECT * from ${this.name}`)
     }
 }
@@ -143,12 +126,12 @@ class Barang extends Table {
         super(dao);
     }
 
-    async create() {
+    create() {
         this.dao?.exec(`CREATE TABLE IF NOT EXISTS ${this.name}(id INTEGER PRIMARY KEY, kodebarang INTEGER NOT NULL UNIQUE, namabarang TEXT NOT NULL, harga INT NOT NULL, stok INT NOT NULL)`)
     }
 
 
-    async insert({kodebarang, namabarang, harga, stok}) {
+    insert({kodebarang, namabarang, harga, stok}) {
         return this.dao?.run(`INSERT INTO ${this.name}(kodebarang, namabarang, harga, stok) VALUES(${kodebarang}, '${namabarang}', ${harga}, ${stok})`)
 
     }
@@ -161,16 +144,16 @@ class Keranjang extends Table {
         super(dao);
     }
 
-    async create() {
+    create() {
         this.dao?.exec(`CREATE TABLE IF NOT EXISTS ${this.name}(id INTEGER PRIMARY KEY, transaksi_id INTEGER NOT NULL, data_barang_id INTEGER, jumlah INTEGER NOT NULL, FOREIGN KEY(transaksi_id) REFERENCES transaksi(id), FOREIGN KEY(data_barang_id) REFERENCES barang(id) ON UPDATE CASCADE ON DELETE SET NULL)`)
     }
 
-    async insert({transaksi_id, data_barang_id, jumlah}) {
+    insert({transaksi_id, data_barang_id, jumlah}) {
         return this.dao?.run(`INSERT INTO ${this.name}(transaksi_id, data_barang_id, jumlah) VALUES(${transaksi_id}, ${data_barang_id}, ${jumlah})`)
     }
 
 
-    async getByID(id) {
+    getByID(id) {
         return this.dao?.get(
             `SELECT * 
                 FROM ${this.name} 
@@ -178,7 +161,7 @@ class Keranjang extends Table {
                     ON data_barang_id = barang.id
                 WHERE ${this.name}.id = ${id} `)
     }
-    async barangID(id) {
+    barangID(id) {
         return this.dao?.get(
             `SELECT * 
                 FROM ${this.name} 
@@ -187,7 +170,7 @@ class Keranjang extends Table {
                 WHERE barang.id = ${id}`)
 
     }
-    async transaksiID(id) {
+    transaksiID(id) {
         return this.dao?.all(
             `SELECT * 
                 FROM ${this.name} 
@@ -205,15 +188,15 @@ class Transaksi extends Table {
         super(dao);
     }
 
-    async create() {
+    create() {
         this.dao?.exec(`CREATE TABLE IF NOT EXISTS ${this.name}(id INTEGER PRIMARY KEY,waktu DATETIME DEFAULT CURRENT_TIMESTAMP, terbayar BOOLEAN DEFAULT 0)`)
     }
 
-    async update(id) {
+    update(id) {
         return this.dao?.run(`UPDATE ${this.name} SET terbayar=1 WHERE id=${id}`)
     }
 
-    async insert() {
+    insert() {
         return this.dao?.run(`INSERT INTO ${this.name} DEFAULT VALUES`)
     }
 }

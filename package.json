@@ -35,10 +35,6 @@
         "rollup-plugin-postcss": "^4.0.0",
         "rollup-plugin-terser": "^7.0.2"
     },
-    "dependencies": {
-        "sqlite": "^4.0.19",
-        "sqlite3": "^5.0.1"
-    },
     "build": {
         "productName": "Program Kasir",
         "appId": "com.cipuy-cloud.Program_Kasir",
@@ -58,5 +54,8 @@
             "src/resources/",
             "build/"
         ]
+    },
+    "dependencies": {
+        "better-sqlite3": "^7.1.2"
     }
 }
