@@ -3,6 +3,7 @@ const sqlite3 = require("sqlite3")
 const {open} = require("sqlite")
 
 
+
 class Channel {
     constructor(db) {
         this.dao = new Dao(db)
@@ -47,8 +48,8 @@ class Channel {
     }
 
     initialDb() {
-        this.table.forEach(async (query) => {
-            await query.create()
+        this.table.forEach((query) => {
+            query.create()
         })
     }
 
@@ -94,20 +95,20 @@ class Dao {
 
 
     async exec(query) {
-        await handling(() => this.db.exec(query))
+        return handling(() => this.db.exec(query))
     }
 
     async get(query) {
-        return await handling(() => this.db.get(query))
+        return handling(() => this.db.get(query))
     }
 
     async all(query) {
-        return await handling(() => this.db.all(query))
+        return handling(() => this.db.all(query))
     }
 
 
     async run(query) {
-        return await handling(() => this.db.run(query))
+        return handling(() => this.db.run(query))
     }
     close() {
         this.db.close()
@@ -127,10 +128,10 @@ class Table {
     async insert() {}
 
     async getByID(id) {
-        return await this.dao?.get(`SELECT * from ${this.name} WHERE id = ${id}`)
+        return this.dao?.get(`SELECT * from ${this.name} WHERE id = ${id}`)
     }
     async all() {
-        return await this.dao?.all(`SELECT * from ${this.name}`)
+        return this.dao?.all(`SELECT * from ${this.name}`)
     }
 }
 
@@ -143,12 +144,12 @@ class Barang extends Table {
     }
 
     async create() {
-        await this.dao?.exec(`CREATE TABLE IF NOT EXISTS ${this.name}(id INTEGER PRIMARY KEY, kodebarang INTEGER NOT NULL UNIQUE, namabarang TEXT NOT NULL, harga INT NOT NULL, stok INT NOT NULL)`)
+        this.dao?.exec(`CREATE TABLE IF NOT EXISTS ${this.name}(id INTEGER PRIMARY KEY, kodebarang INTEGER NOT NULL UNIQUE, namabarang TEXT NOT NULL, harga INT NOT NULL, stok INT NOT NULL)`)
     }
 
 
     async insert({kodebarang, namabarang, harga, stok}) {
-        return await this.dao?.run(`INSERT INTO ${this.name}(kodebarang, namabarang, harga, stok) VALUES(${kodebarang}, '${namabarang}', ${harga}, ${stok})`)
+        return this.dao?.run(`INSERT INTO ${this.name}(kodebarang, namabarang, harga, stok) VALUES(${kodebarang}, '${namabarang}', ${harga}, ${stok})`)
 
     }
 }
@@ -161,16 +162,16 @@ class Keranjang extends Table {
     }
 
     async create() {
-        await this.dao?.exec(`CREATE TABLE IF NOT EXISTS ${this.name}(id INTEGER PRIMARY KEY, transaksi_id INTEGER NOT NULL, data_barang_id INTEGER, jumlah INTEGER NOT NULL, FOREIGN KEY(transaksi_id) REFERENCES transaksi(id), FOREIGN KEY(data_barang_id) REFERENCES barang(id) ON UPDATE CASCADE ON DELETE SET NULL)`)
+        this.dao?.exec(`CREATE TABLE IF NOT EXISTS ${this.name}(id INTEGER PRIMARY KEY, transaksi_id INTEGER NOT NULL, data_barang_id INTEGER, jumlah INTEGER NOT NULL, FOREIGN KEY(transaksi_id) REFERENCES transaksi(id), FOREIGN KEY(data_barang_id) REFERENCES barang(id) ON UPDATE CASCADE ON DELETE SET NULL)`)
     }
 
     async insert({transaksi_id, data_barang_id, jumlah}) {
-        return await this.dao?.run(`INSERT INTO ${this.name}(transaksi_id, data_barang_id, jumlah) VALUES(${transaksi_id}, ${data_barang_id}, ${jumlah})`)
+        return this.dao?.run(`INSERT INTO ${this.name}(transaksi_id, data_barang_id, jumlah) VALUES(${transaksi_id}, ${data_barang_id}, ${jumlah})`)
     }
 
 
     async getByID(id) {
-        return await this.dao?.get(
+        return this.dao?.get(
             `SELECT * 
                 FROM ${this.name} 
                 INNER JOIN barang 
@@ -178,7 +179,7 @@ class Keranjang extends Table {
                 WHERE ${this.name}.id = ${id} `)
     }
     async barangID(id) {
-        return await this.dao?.get(
+        return this.dao?.get(
             `SELECT * 
                 FROM ${this.name} 
                 INNER JOIN barang 
@@ -187,7 +188,7 @@ class Keranjang extends Table {
 
     }
     async transaksiID(id) {
-        return await this.dao?.all(
+        return this.dao?.all(
             `SELECT * 
                 FROM ${this.name} 
                 INNER JOIN barang 
@@ -205,15 +206,15 @@ class Transaksi extends Table {
     }
 
     async create() {
-        await this.dao?.exec(`CREATE TABLE IF NOT EXISTS ${this.name}(id INTEGER PRIMARY KEY,waktu DATETIME DEFAULT CURRENT_TIMESTAMP, terbayar BOOLEAN DEFAULT 0)`)
+        this.dao?.exec(`CREATE TABLE IF NOT EXISTS ${this.name}(id INTEGER PRIMARY KEY,waktu DATETIME DEFAULT CURRENT_TIMESTAMP, terbayar BOOLEAN DEFAULT 0)`)
     }
 
     async update(id) {
-        return await this.dao?.run(`UPDATE ${this.name} SET terbayar=1 WHERE id=${id}`)
+        return this.dao?.run(`UPDATE ${this.name} SET terbayar=1 WHERE id=${id}`)
     }
 
     async insert() {
-        return await this.dao?.run(`INSERT INTO ${this.name} DEFAULT VALUES`)
+        return this.dao?.run(`INSERT INTO ${this.name} DEFAULT VALUES`)
     }
 }
 
