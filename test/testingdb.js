@@ -25,12 +25,25 @@ describe('Database', function () {
             namabarang: "dummy3",
             harga: 50000,
             stok: 8
-        }
+        },
+        {
+            kodebarang: 323343,
+            namabarang: "dummy4",
+            harga: 12000000,
+            stok: 2
+        },
+        {
+            kodebarang: 123343,
+            namabarang: "dummy5",
+            harga: 112000,
+            stok: 12
+        },
     ]
 
     let dummy;
     let data_barang_id;
     let transaksi_id;
+    let listByTransaksiID
 
 
 
@@ -46,9 +59,11 @@ describe('Database', function () {
 
     describe("Barang", function () {
         it('masukin barang', () => {
-            const {status, result} = dummy.barang.insert(barang[0])
-            data_barang_id = result.lastInsertRowid
-            assert.equal(status, true)
+            barang.forEach((b) => {
+                const {status, result} = dummy.barang.insert(b)
+                assert.equal(status, true)
+                data_barang_id = result.lastInsertRowid
+            })
         })
 
         it('jika memasukan kodebarang sama, status: false', () => {
@@ -59,7 +74,7 @@ describe('Database', function () {
         it('print barang dengan id', () => {
             const {status, result} = dummy.barang.getByID(data_barang_id)
             assert.equal(status, true)
-            assert.equal(result.kodebarang, barang[0].kodebarang)
+            assert.equal(result.kodebarang, barang[barang.length - 1].kodebarang)
         })
 
     })
@@ -78,36 +93,26 @@ describe('Database', function () {
     })
 
     describe("Keranjang", function () {
-        let keranjang_id;
+        let br = []
         it("masukin keranjang", () => {
-            const {status, result} = dummy.keranjang.insert({transaksi_id, data_barang_id, jumlah: 2})
-            assert.equal(status, true)
-            keranjang_id = result.lastInsertRowid
-        })
-        it('print keranjang dengan keranjang id', () => {
-            const {status, result} = dummy.keranjang.getByID(data_barang_id)
-            assert.equal(status, true)
-            assert.equal(result.kodebarang, barang[0].kodebarang)
-        })
-        it('print keranjang dengan barang id', () => {
-            const {status, result} = dummy.keranjang.barangID(data_barang_id)
-
-            assert.equal(status, true)
-            assert.equal(result.kodebarang, barang[0].kodebarang)
-        })
-        it('print keranjang dengan transaksi id', () => {
-            delete barang[0]
-
-            barang.forEach((b) => {
-                let br = dummy.barang.insert(b)
-                let data_barang_id = br.result.lastInsertRowid
-                let k = dummy.keranjang.insert({transaksi_id, data_barang_id, jumlah: 1})
-
+            br = dummy.barang.all().result
+            br.slice(0, 3).forEach((b) => {
+                let k = dummy.keranjang.insert({transaksi_id, data_barang_id: b.id, jumlah: 1})
+                assert.equal(k.status, true)
             })
+        })
 
+        it('print keranjang dengan transaksi id', () => {
             const {result} = dummy.keranjang.transaksiID(transaksi_id)
             assert.equal(result.length, 3)
+            listByTransaksiID = result
+        })
 
+        it('print keranjang dengan barang id', () => {
+            const {status, result} = dummy.keranjang.barangID(br[0].id)
+
+            assert.equal(status, true)
+            assert.equal(result.kodebarang, barang[0].kodebarang)
         })
     })
 
@@ -115,8 +120,14 @@ describe('Database', function () {
 
     describe("Event", function () {
         it("transaksi terbayar", () => {
-            const {status, result, err} = dummy.transaksi.update(transaksi_id)
-            assert.equal(status, true)
+            let bayar = dummy.handleBayar(transaksi_id)
+            assert.equal(bayar.status, true)
+
+            const {result} = dummy.keranjang.transaksiID(transaksi_id)
+
+            for (i in result) {
+                assert.equal(result[i].stok, (listByTransaksiID[i].stok - 1))
+            }
         })
     })
 

@@ -54,10 +54,22 @@ class Channel {
         })
     }
 
+    handleBayar(transaksi_id) {
+        return handling(() => {
+            let {status, err} = this.transaksi.update(transaksi_id)
+            if (!status) {
+                throw err
+            }
+            let {result} = this.barang.handleUpdateStok(transaksi_id)
+            return result
+        })
+    }
+
     close() {
         for (let i in this.table) {
             delete this.table[i]
         }
+        this.dao.close()
     }
 }
 
@@ -96,6 +108,9 @@ class Dao {
 
         })
     }
+    close() {
+        this.db.close()
+    }
 }
 
 
@@ -113,6 +128,12 @@ class Table {
     getByID(id) {
         return this.dao?.get(`SELECT * from ${this.name} WHERE id = ${id}`)
     }
+
+    rmById(id) {
+        return this.dao?.get(`DELETE from ${this.name} WHERE id = ${id}`)
+    }
+
+
     all() {
         return this.dao?.all(`SELECT * from ${this.name}`)
     }
@@ -135,6 +156,10 @@ class Barang extends Table {
         return this.dao?.run(`INSERT INTO ${this.name}(kodebarang, namabarang, harga, stok) VALUES(${kodebarang}, '${namabarang}', ${harga}, ${stok})`)
 
     }
+
+    handleUpdateStok(transaksi_id) {
+        return this.dao?.run(`UPDATE ${this.name} SET stok = stok - 1 WHERE id IN (SELECT data_barang_id FROM keranjang where transaksi_id= ${transaksi_id})`)
+    }
 }
 
 
@@ -153,23 +178,17 @@ class Keranjang extends Table {
     }
 
 
-    getByID(id) {
-        return this.dao?.get(
-            `SELECT * 
-                FROM ${this.name} 
-                INNER JOIN barang 
-                    ON data_barang_id = barang.id
-                WHERE ${this.name}.id = ${id} `)
-    }
+
     barangID(id) {
         return this.dao?.get(
             `SELECT * 
                 FROM ${this.name} 
                 INNER JOIN barang 
                     ON data_barang_id = barang.id
-                WHERE barang.id = ${id}`)
+                WHERE data_barang_id = ${id}`)
 
     }
+
     transaksiID(id) {
         return this.dao?.all(
             `SELECT * 
