@@ -7,15 +7,27 @@ class Controller {
 
 
     async run() {
-        this.initial()
+        await this.initial()
     }
 
-    barang() {
-        return this.model.data_barang
-    }
 
-    initial() {
-        this.view.render_barang(this.barang)
+    async initial() {
+        let {status, result} = await this.model.data_barang
+
+        // event
+        this.view.cari_barang.addEventListener("submit", ev => {
+            ev.preventDefault()
+        })
+
+        this.view.form_cari.addEventListener("keyup", async ({target}) => {
+
+            if (target.value) {
+                let barang = result?.find((t) => t.id === parseInt(target.value))
+                barang ? this.view.render_barang([barang]) : this.view.render_barang()
+            }
+        })
+
+        status ? this.view.render_barang(result) : this.view.render_barang()
     }
 }
 
@@ -27,41 +39,27 @@ class View {
         this.cari_barang = document.getElementById("cari_barang")
         this.form_cari = this.cari_barang.elements[0]
         this.list_barang = document.getElementById("list_barang")
-
-
-        // event
-        this.cari_barang.addEventListener("submit", ev => {
-            ev.preventDefault()
-        })
-
-        this.form_cari.addEventListener("keyup", ({target}) => {
-            if (target.value) {
-                let barang = window.data_barang.find((t) => t.id === parseInt(target.value))
-
-                barang ? this.render_barang([barang]) : this.render_barang()
-            }
-        })
     }
 
 
     render_barang(data_barang = []) {
-        // let data = data_barang ?? window.data_barang
+        let list = data_barang.length == 0 ?
+            '<li class="container"><div class="item"><h1 class="left">Barang Kosong</h1></div></li>'.trim()
+            :
+            data_barang.map((barang) => {
+                let uang = new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR"}).format(barang.harga)
 
-        this.list_barang.innerHTML = data.map((barang) => {
-
-            let uang = new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR"}).format(barang.harga)
-
-            return `
-                <li id="${barang.id}" class="container row baseline between">
-                    <span id="id_barang">ID: ${barang.id}</span>
+                return `
+                    <li id="${barang.id}" class="container row baseline between"> 
+                        <span id="id_barang">ID: ${barang.id}</span>
                         <div class="item">
                             <h1 class="left">${barang.nama_barang}</h1>
                         </div>
-                    <h3 class="price">${uang}</h3>
-                </li>
-            `.trim()
-        }).join(" ")
-
+                        <h3 class="price">${uang}</h3>
+                    </li>
+                `.trim()
+            }).join(" ")
+        this.list_barang.innerHTML = list
     }
 
 
@@ -72,6 +70,7 @@ class View {
 
 class Model {
     constructor() {
+        this.data_barang = window.kasir.barang_get()
     }
 }
 

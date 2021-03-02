@@ -12,6 +12,7 @@ let channel = new Channel(DB);
 channel.listen()
 
 
+
 let mainWindow
 let dataBarangWindow
 
@@ -21,9 +22,8 @@ if (serve) {
     const all = path.join(_root, "..")
     require('electron-reload')(all)
 }
-
-
 const createWindow = () => {
+    console.log(__dirname)
     mainWindow = new BrowserWindow({
         width: 1024,
         height: 600,
@@ -32,9 +32,10 @@ const createWindow = () => {
         show: false,
         webPreferences: {
             contextIsolation: true,
-            preload: "preload.js"
+            preload: `${__dirname}/preload.js`
         }
     });
+
 
     setMainMenu()
 
@@ -45,7 +46,7 @@ const createWindow = () => {
         mainWindow.show()
     })
     mainWindow.on('closed', () => {
-        channel.close()
+        // channel.close()
         mainWindow = null
     })
 }
@@ -90,7 +91,7 @@ const createWindowDataBarang = () => {
         show: false,
         webPreferences: {
             contextIsolation: true,
-            preload: "preload.js"
+            preload: `${__dirname}/preload.js`
         }
     })
 

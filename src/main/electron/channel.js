@@ -1,5 +1,6 @@
-const {ipcMain} = require("electron")
+const {ipcMain, app} = require("electron")
 const Database = require("better-sqlite3")
+const {TRANSAKSI_LAST_ID, TUTUP, BARANG_TAMBAH, BARANG_GET, TRANSAKSI_TAMBAH, KERANJANG_TAMBAH, KERANJANG_BAYAR} = require("./env")
 
 
 const connect = (path) => new Database(path)
@@ -19,7 +20,6 @@ const handling = (cb) => {
 
 }
 
-
 class Channel {
     constructor(path) {
         let db = connect(path)
@@ -36,15 +36,28 @@ class Channel {
     }
 
     listen() {
-        ipcMain.handle(TAMBAH_MASSAGE, (_event, kodebarang, namabarang, harga, jumlah) => {
-            return this.tambah(kodebarang, namabarang, harga, jumlah)
+        ipcMain.handle(BARANG_TAMBAH, (_event, kodebarang, namabarang, harga, stok) => {
+            return this.barang.tambah(kodebarang, namabarang, harga, stok)
         })
-        ipcMain.handle(GET_MASSAGE, (_event, _arg) => {
-            return this.all()
+        ipcMain.handle(BARANG_GET, (_event, _arg) => {
+            return this.barang.all()
         })
-        ipcMain.handle(BAYAR_MESSAGE, () => {
-            this.delete_all()
-            return true
+        ipcMain.handle(KERANJANG_BAYAR, (_event, transaksi_id) => {
+            return this.handleBayar(transaksi_id)
+        })
+        ipcMain.handle(KERANJANG_TAMBAH, (_event, transaksi_id, data_barang_id, jumlah) => {
+            return this.keranjang.tambah({transaksi_id, data_barang_id, jumlah})
+        })
+        ipcMain.handle(TRANSAKSI_LAST_ID, (_event) => {
+            return this.transaksi.lastID()
+        })
+        ipcMain.handle(TRANSAKSI_TAMBAH, (_event, _arg) => {
+            return this.transaksi.insert()
+        })
+
+        ipcMain.handle(TUTUP, (_event, _arg) => {
+            this.close()
+            app.quit()
         })
     }
 
@@ -129,13 +142,17 @@ class Table {
         return this.dao?.get(`SELECT * from ${this.name} WHERE id = ${id}`)
     }
 
-    rmById(id) {
+    rmByID(id) {
         return this.dao?.get(`DELETE from ${this.name} WHERE id = ${id}`)
     }
 
 
     all() {
         return this.dao?.all(`SELECT * from ${this.name}`)
+    }
+
+    lastID() {
+        return this.dao?.get(`SELECT MAX(id) as lastID FROM ${this.name}`)
     }
 }
 
@@ -218,6 +235,7 @@ class Transaksi extends Table {
     insert() {
         return this.dao?.run(`INSERT INTO ${this.name} DEFAULT VALUES`)
     }
+
 }
 
 
