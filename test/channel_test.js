@@ -5,12 +5,11 @@ const fs = require("fs")
 
 
 
-const db = "test/dummy.db"
 
 describe("App", function () {
-
+    const db = `${__dirname}/dummy.db`
     before(() => {
-        dummy = new Channel("test/dummy.db")
+        dummy = new Channel(db)
     })
 
 
