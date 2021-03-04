@@ -1,6 +1,6 @@
 const {ipcMain, app} = require("electron")
 const Database = require("better-sqlite3")
-const {TRANSAKSI_LAST_ID, TUTUP, BARANG_TAMBAH, BARANG_GET, TRANSAKSI_TAMBAH, KERANJANG_TAMBAH, KERANJANG_BAYAR} = require("./env")
+const {TRANSAKSI_CANCEL, BARANG_HAPUS, KERANJANG_GET, TRANSAKSI_LAST_ID, TUTUP, BARANG_TAMBAH, BARANG_GET, TRANSAKSI_TAMBAH, KERANJANG_TAMBAH, KERANJANG_BAYAR} = require("./env")
 
 
 const connect = (path) => new Database(path)
@@ -36,23 +36,42 @@ class Channel {
     }
 
     listen() {
+
         ipcMain.handle(BARANG_TAMBAH, (_event, kodebarang, namabarang, harga, stok) => {
             return this.barang.tambah(kodebarang, namabarang, harga, stok)
         })
+
         ipcMain.handle(BARANG_GET, (_event, _arg) => {
             return this.barang.all()
         })
+
+        ipcMain.handle(BARANG_HAPUS, (_event, barang_id) => {
+            return this.barang.rmByID(barang_id)
+        })
+
         ipcMain.handle(KERANJANG_BAYAR, (_event, transaksi_id) => {
             return this.handleBayar(transaksi_id)
         })
+
+        ipcMain.handle(KERANJANG_GET, (_event, transaksi_id) => {
+            return this.keranjang.transaksiID(transaksi_id)
+        })
+
+
         ipcMain.handle(KERANJANG_TAMBAH, (_event, transaksi_id, data_barang_id, jumlah) => {
             return this.keranjang.tambah({transaksi_id, data_barang_id, jumlah})
         })
+
         ipcMain.handle(TRANSAKSI_LAST_ID, (_event) => {
             return this.transaksi.lastID()
         })
+
         ipcMain.handle(TRANSAKSI_TAMBAH, (_event, _arg) => {
             return this.transaksi.insert()
+        })
+
+        ipcMain.handle(TRANSAKSI_CANCEL, (_event, transaksi_id) => {
+            return this.handleCancel(transaksi_id)
         })
 
         ipcMain.handle(TUTUP, (_event, _arg) => {
@@ -67,13 +86,24 @@ class Channel {
         })
     }
 
+    handleCancel(transaksi_id) {
+        return handling(() => {
+            let {status, err} = this.transaksi.cancel(transaksi_id)
+            if (!status) {
+                throw err
+            }
+            let {result} = this.keranjang.rmByTransaksiID(transaksi_id)
+            return result
+        })
+    }
+
     handleBayar(transaksi_id) {
         return handling(() => {
             let {status, err} = this.transaksi.update(transaksi_id)
             if (!status) {
                 throw err
             }
-            let {result} = this.barang.handleUpdateStok(transaksi_id)
+            let {result} = this.barang.handleupdatestok(transaksi_id)
             return result
         })
     }
@@ -130,8 +160,8 @@ class Dao {
 
 
 class Table {
-    name = null
-    dao = null
+    dao = null;
+    name = null;
     constructor(dao) {
         this.dao = dao
     }
@@ -206,6 +236,10 @@ class Keranjang extends Table {
 
     }
 
+    rmByTransaksiID(transaksi_id) {
+        return this.dao?.get(`DELETE from ${this.name} WHERE transaksi_id = ${transaksi_id}`)
+    }
+
     transaksiID(id) {
         return this.dao?.all(
             `SELECT * 
@@ -225,7 +259,12 @@ class Transaksi extends Table {
     }
 
     create() {
-        this.dao?.exec(`CREATE TABLE IF NOT EXISTS ${this.name}(id INTEGER PRIMARY KEY,waktu DATETIME DEFAULT CURRENT_TIMESTAMP, terbayar BOOLEAN DEFAULT 0)`)
+        this.dao?.exec(`CREATE TABLE IF NOT EXISTS ${this.name}(id INTEGER PRIMARY KEY,waktu DATETIME DEFAULT CURRENT_TIMESTAMP, terbayar BOOLEAN DEFAULT 0, cancel BOOLEAN DEFAULT 0)`)
+    }
+
+
+    cancel(id) {
+        return this.dao?.run(`UPDATE ${this.name} SET cancel=1 WHERE id=${id}`)
     }
 
     update(id) {
