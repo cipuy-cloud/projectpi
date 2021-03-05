@@ -1,0 +1,32 @@
+[
+    {
+        "kodebarang": 323,
+        "namabarang": "dummy1",
+        "harga": 12000000,
+        "stok": 2
+    },
+    {
+        "kodebarang": 123,
+        "namabarang": "dummy2",
+        "harga": 112000,
+        "stok": 12
+    },
+    {
+        "kodebarang": 11394,
+        "namabarang": "dummy3",
+        "harga": 50000,
+        "stok": 8
+    },
+    {
+        "kodebarang": 323343,
+        "namabarang": "dummy4",
+        "harga": 12000000,
+        "stok": 2
+    },
+    {
+        "kodebarang": 123343,
+        "namabarang": "dummy5",
+        "harga": 112000,
+        "stok": 12
+    }
+]

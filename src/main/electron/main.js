@@ -6,6 +6,8 @@ const Channel = require("./channel")
 const path = require("path")
 const {DB} = require("./env")
 
+const isTest = args.some(val => val === "--test")
+
 
 let channel = new Channel(DB);
 
@@ -23,7 +25,6 @@ if (serve) {
 }
 
 const createWindow = () => {
-    console.log(__dirname)
     mainWindow = new BrowserWindow({
         width: 1024,
         height: 600,
@@ -31,13 +32,15 @@ const createWindow = () => {
         center: true,
         show: false,
         webPreferences: {
-            contextIsolation: true,
-            preload: `${__dirname}/preload.js`
-        }
+            preload: `${__dirname}/preload.js`,
+            nodeIntegration: isTest,
+            enableRemoteModule: isTest,
+            contextIsolation: !isTest,
+        },
     });
 
-
     setMainMenu()
+
 
     mainWindow.loadURL(`file://${_root}/resources/index.html`);
 
@@ -97,7 +100,7 @@ const createWindowDataBarang = () => {
 
     dataBarangWindow.loadURL(`file://${_root}/resources/databarang.html`);
 
-    // dataBarangWindow.setMenu(null)
+    dataBarangWindow.setMenu(null)
 
     dataBarangWindow.once("ready-to-show", () => {
         dataBarangWindow.show()

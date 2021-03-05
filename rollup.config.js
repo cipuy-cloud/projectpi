@@ -1,11 +1,11 @@
 // memperkecil ukuran js
 import {terser} from "rollup-plugin-terser"
 // plugin buat javascript jadul ke modern
-import commonjs from '@rollup/plugin-commonjs';
+import commonjs from "@rollup/plugin-commonjs";
 // masukin module lain ke bundle
 import {nodeResolve} from "@rollup/plugin-node-resolve"
 // plugin buat javascript modern
-import {babel} from '@rollup/plugin-babel'
+import {babel} from "@rollup/plugin-babel"
 // plugin edit css
 import postcss from "rollup-plugin-postcss"
 // betulin css

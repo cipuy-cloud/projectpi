@@ -14,6 +14,7 @@ module.exports = {
     TRANSAKSI_TAMBAH: "TRANSAKSI_TAMBAH",
     TRANSAKSI_LAST_ID: "TRANSAKSI_LAST_ID",
     TRANSAKSI_CANCEL: "TRANSAKSI_CANCEL",
+    TRANSAKSI_HAPUS: "TRANSAKSI_HAPUS",
 
     TUTUP: "TUTUP",
 
@@ -21,3 +22,6 @@ module.exports = {
     // Database
     DB: "src/resources/db/database.db",
 }
+
+
+

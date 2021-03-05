@@ -1,7 +1,6 @@
 const {ipcMain, app} = require("electron")
 const Database = require("better-sqlite3")
-const {TRANSAKSI_CANCEL, BARANG_HAPUS, KERANJANG_GET, TRANSAKSI_LAST_ID, TUTUP, BARANG_TAMBAH, BARANG_GET, TRANSAKSI_TAMBAH, KERANJANG_TAMBAH, KERANJANG_BAYAR} = require("./env")
-
+const vars = require("./env")
 
 const connect = (path) => new Database(path)
 
@@ -37,44 +36,51 @@ class Channel {
 
     listen() {
 
-        ipcMain.handle(BARANG_TAMBAH, (_event, kodebarang, namabarang, harga, stok) => {
+        ipcMain.handle(vars.BARANG_TAMBAH, (_event, kodebarang, namabarang, harga, stok) => {
             return this.barang.tambah(kodebarang, namabarang, harga, stok)
         })
 
-        ipcMain.handle(BARANG_GET, (_event, _arg) => {
+        ipcMain.handle(vars.BARANG_GET, (_event, _arg) => {
             return this.barang.all()
         })
 
-        ipcMain.handle(BARANG_HAPUS, (_event, barang_id) => {
+        ipcMain.handle(vars.BARANG_HAPUS, (_event, barang_id) => {
             return this.barang.rmByID(barang_id)
         })
 
-        ipcMain.handle(KERANJANG_BAYAR, (_event, transaksi_id) => {
+        ipcMain.handle(vars.KERANJANG_BAYAR, (_event, transaksi_id) => {
             return this.handleBayar(transaksi_id)
         })
 
-        ipcMain.handle(KERANJANG_GET, (_event, transaksi_id) => {
+        ipcMain.handle(vars.KERANJANG_GET, (_event, transaksi_id) => {
             return this.keranjang.transaksiID(transaksi_id)
         })
 
-
-        ipcMain.handle(KERANJANG_TAMBAH, (_event, transaksi_id, data_barang_id, jumlah) => {
+        ipcMain.handle(vars.KERANJANG_TAMBAH, (_event, transaksi_id, data_barang_id, jumlah) => {
             return this.keranjang.tambah({transaksi_id, data_barang_id, jumlah})
         })
 
-        ipcMain.handle(TRANSAKSI_LAST_ID, (_event) => {
+        ipcMain.handle(vars.KERANJANG_HAPUS, (_event, data_barang_id) => {
+            return this.keranjang.rmByBarangID(data_barang_id)
+        })
+
+        ipcMain.handle(vars.TRANSAKSI_LAST_ID, (_event) => {
             return this.transaksi.lastID()
         })
 
-        ipcMain.handle(TRANSAKSI_TAMBAH, (_event, _arg) => {
+        ipcMain.handle(vars.TRANSAKSI_TAMBAH, (_event, _arg) => {
             return this.transaksi.insert()
         })
 
-        ipcMain.handle(TRANSAKSI_CANCEL, (_event, transaksi_id) => {
+        ipcMain.handle(vars.TRANSAKSI_HAPUS, (_event, transaksi_id) => {
+            return this.transaksi.rmByID(transaksi_id)
+        })
+
+        ipcMain.handle(vars.TRANSAKSI_CANCEL, (_event, transaksi_id) => {
             return this.handleCancel(transaksi_id)
         })
 
-        ipcMain.handle(TUTUP, (_event, _arg) => {
+        ipcMain.handle(vars.TUTUP, (_event, _arg) => {
             this.close()
             app.quit()
         })
@@ -103,7 +109,7 @@ class Channel {
             if (!status) {
                 throw err
             }
-            let {result} = this.barang.handleupdatestok(transaksi_id)
+            let {result} = this.barang.handleUpdateStok(transaksi_id)
             return result
         })
     }
@@ -162,6 +168,7 @@ class Dao {
 class Table {
     dao = null;
     name = null;
+
     constructor(dao) {
         this.dao = dao
     }
@@ -237,7 +244,11 @@ class Keranjang extends Table {
     }
 
     rmByTransaksiID(transaksi_id) {
-        return this.dao?.get(`DELETE from ${this.name} WHERE transaksi_id = ${transaksi_id}`)
+        return this.dao?.get(`DELETE from ${this.name} WHERE transaksi_id=${transaksi_id}`)
+    }
+
+    rmByBarangID(data_barang_id) {
+        return this.dao?.get(`DELETE from ${this.name} WHERE data_barang_id=${data_barang_id}`)
     }
 
     transaksiID(id) {
