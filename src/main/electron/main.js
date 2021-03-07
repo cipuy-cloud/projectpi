@@ -6,11 +6,11 @@ const Channel = require("./channel")
 const path = require("path")
 const {DB} = require("./env")
 
-const isTest = args.some(val => val === "--test")
+const indexPath = args.indexOf("--test")
+const isTest = indexPath != -1
 
 
-let channel = new Channel(DB);
-
+let channel = new Channel(isTest ? args[indexPath + 1] : DB);
 channel.listen()
 
 

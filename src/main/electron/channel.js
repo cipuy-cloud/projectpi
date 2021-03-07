@@ -14,6 +14,7 @@ const handling = (cb) => {
         let result = cb()
         return pesan({status: true, result})
     } catch (err) {
+        console.log("ERRORHANDLING:" + err)
         return pesan({err})
     }
 
@@ -23,21 +24,21 @@ class Channel {
     constructor(path) {
         let db = connect(path)
         this.dao = new Dao(db)
+        this.barang = new Barang(this.dao)
+        this.keranjang = new Keranjang(this.dao)
+        this.transaksi = new Transaksi(this.dao)
         this.table = [
-            new Barang(this.dao),
-            new Keranjang(this.dao),
-            new Transaksi(this.dao)
+            this.barang,
+            this.keranjang,
+            this.transaksi
         ]
         this.initialDb()
-        this.barang = this.table[0]
-        this.keranjang = this.table[1]
-        this.transaksi = this.table[2]
     }
 
     listen() {
 
-        ipcMain.handle(vars.BARANG_TAMBAH, (_event, kodebarang, namabarang, harga, stok) => {
-            return this.barang.tambah(kodebarang, namabarang, harga, stok)
+        ipcMain.handle(vars.BARANG_TAMBAH, (_event, barang) => {
+            return this.barang.insert(barang)
         })
 
         ipcMain.handle(vars.BARANG_GET, (_event, _arg) => {
@@ -48,6 +49,10 @@ class Channel {
             return this.barang.rmByID(barang_id)
         })
 
+        ipcMain.handle(vars.KERANJANG_TAMBAH, (_event, transaksi_id, data_barang_id, jumlah) => {
+            return this.keranjang.insert({transaksi_id, data_barang_id, jumlah})
+        })
+
         ipcMain.handle(vars.KERANJANG_BAYAR, (_event, transaksi_id) => {
             return this.handleBayar(transaksi_id)
         })
@@ -56,9 +61,6 @@ class Channel {
             return this.keranjang.transaksiID(transaksi_id)
         })
 
-        ipcMain.handle(vars.KERANJANG_TAMBAH, (_event, transaksi_id, data_barang_id, jumlah) => {
-            return this.keranjang.tambah({transaksi_id, data_barang_id, jumlah})
-        })
 
         ipcMain.handle(vars.KERANJANG_HAPUS, (_event, data_barang_id) => {
             return this.keranjang.rmByBarangID(data_barang_id)
@@ -70,6 +72,10 @@ class Channel {
 
         ipcMain.handle(vars.TRANSAKSI_TAMBAH, (_event, _arg) => {
             return this.transaksi.insert()
+        })
+
+        ipcMain.handle(vars.TRANSAKSI_GET, (_event, transaksi_id) => {
+            return this.transaksi.getByID(transaksi_id)
         })
 
         ipcMain.handle(vars.TRANSAKSI_HAPUS, (_event, transaksi_id) => {
@@ -180,7 +186,7 @@ class Table {
     }
 
     rmByID(id) {
-        return this.dao?.get(`DELETE from ${this.name} WHERE id = ${id}`)
+        return this.dao?.run(`DELETE from ${this.name} WHERE id = ${id}`)
     }
 
 
@@ -232,7 +238,6 @@ class Keranjang extends Table {
     }
 
 
-
     barangID(id) {
         return this.dao?.get(
             `SELECT * 
@@ -244,11 +249,11 @@ class Keranjang extends Table {
     }
 
     rmByTransaksiID(transaksi_id) {
-        return this.dao?.get(`DELETE from ${this.name} WHERE transaksi_id=${transaksi_id}`)
+        return this.dao?.run(`DELETE from ${this.name} WHERE transaksi_id=${transaksi_id}`)
     }
 
     rmByBarangID(data_barang_id) {
-        return this.dao?.get(`DELETE from ${this.name} WHERE data_barang_id=${data_barang_id}`)
+        return this.dao?.run(`DELETE from ${this.name} WHERE data_barang_id=${data_barang_id}`)
     }
 
     transaksiID(id) {

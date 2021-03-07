@@ -5,9 +5,7 @@ const fs = require("fs")
 
 
 
-
-
-describe("App", function () {
+describe("Before Install", function () {
     const db = `${__dirname}/dummy.db`
     let dummy;
     let barang;
@@ -27,7 +25,7 @@ describe("App", function () {
             if (err) {
                 throw err
             }
-            console.log("delete dummy db");
+            console.log("DELETE DUMMY DB");
 
         })
     })
