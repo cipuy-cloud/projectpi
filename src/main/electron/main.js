@@ -19,7 +19,8 @@ const _root = path.join(__dirname, "..", "..")
 
 if (serve) {
     const bundle = path.join(_root, "..", "build")
-    require("electron-reload")([bundle])
+    const resources = path.join(_root, "resources/*.*")
+    require("electron-reload")([bundle, resources])
 }
 
 const createWindow = () => {

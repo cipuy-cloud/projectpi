@@ -76,12 +76,13 @@ class View {
 
 
     constructor() {
-        // initial
+        // element
         this.cari_barang = document.getElementById("cari_barang")
         this.form_cari = this.cari_barang.elements[0]
         this.list_barang = document.getElementById("list_barang")
         this.form_pembayaran = document.getElementById("bayar")
         this.form_input_barang = document.getElementById("form_input_barang")
+
     }
 
 
@@ -96,10 +97,10 @@ class View {
                         <div class="item">
                             <h1 class="left">${barang.namabarang}</h1>
                         </div>
+                        <div class="fill">${barang.stok}</div>
                         <h3 class="border">
                             ${uang}
                         </h3>
-                        <div class="fill">${barang.stok}</div>
                     </li>
                 `.trim()
             }).join(" ")
@@ -115,7 +116,23 @@ class View {
 class Model {
     constructor() {
         this.barang()
+
+        this.barang_state = {
+            selected_mode: false,
+            selected: []
+        }
+
+
     }
+
+    push_selected(id) {
+        this.barang_state.push(id)
+    }
+
+    setSelectedMode() {
+        this.barang_state.selected_mode = !this.barang_state.selected_mode
+    }
+
     async barang() {
         let {status, result} = await window.kasir.barang_get()
         this.data_barang = status && result.length > 0 ? result : []
