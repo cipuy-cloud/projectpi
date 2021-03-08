@@ -37,19 +37,23 @@ class Channel {
     listen(mainWindow) {
 
         ipcMain.handle(vars.BARANG_TAMBAH, async (_event, barang) => {
-            let {status} = await this.barang.insert(barang)
-            if (status) {
-                mainWindow.webContents.send(vars.BARANG_TAMBAH)
+            let result = await this.barang.insert(barang)
+            if (result.status) {
+                mainWindow.webContents.send(vars.BARANG_UPDATE)
             }
-            return this.barang.insert(barang)
+            return result
         })
 
         ipcMain.handle(vars.BARANG_GET, (_event, _arg) => {
             return this.barang.all()
         })
 
-        ipcMain.handle(vars.BARANG_HAPUS, (_event, barang_id) => {
-            return this.barang.rmByID(barang_id)
+        ipcMain.handle(vars.BARANG_HAPUS, async (_event, barang_id) => {
+            let result = await this.barang.rmByID(barang_id)
+            if (result.status) {
+                mainWindow.webContents.send(vars.BARANG_UPDATE)
+            }
+            return result
         })
 
         ipcMain.handle(vars.KERANJANG_TAMBAH, (_event, transaksi_id, data_barang_id, jumlah) => {

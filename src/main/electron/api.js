@@ -21,7 +21,7 @@ const api = (ipc) => {
 
 
         listen: (listener_callback) => {
-            ipc.on(vars.BARANG_TAMBAH, () => {
+            ipc.on(vars.BARANG_UPDATE, () => {
                 listener_callback()
             })
         }
