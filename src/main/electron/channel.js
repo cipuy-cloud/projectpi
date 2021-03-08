@@ -14,7 +14,6 @@ const handling = (cb) => {
         let result = cb()
         return pesan({status: true, result})
     } catch (err) {
-        console.log("ERRORHANDLING:" + err)
         return pesan({err})
     }
 
@@ -35,9 +34,13 @@ class Channel {
         this.initialDb()
     }
 
-    listen() {
+    listen(mainWindow) {
 
-        ipcMain.handle(vars.BARANG_TAMBAH, (_event, barang) => {
+        ipcMain.handle(vars.BARANG_TAMBAH, async (_event, barang) => {
+            let {status} = await this.barang.insert(barang)
+            if (status) {
+                mainWindow.webContents.send(vars.BARANG_TAMBAH)
+            }
             return this.barang.insert(barang)
         })
 

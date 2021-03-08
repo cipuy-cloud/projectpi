@@ -104,19 +104,30 @@ $merah2:        #FADCD9;
          * {
             font-size: .6rem !important;
             @extend %fontBold;
+            text-transform: capitalize;
         }
-        #id_barang {
+        .tr {
             opacity: .6;
         }
-        .price {
-            padding: 5px 15px;
+        .border {
+            padding: 5px 10px;
+            margin: 0px 10px;
             border-radius: 5px;
             border: 2px solid $merah;
             transition: background 150ms ease-in-out;
+            span {
+                padding: 10px;
+            }
             &:hover {
                 background: $merah;
                 color: $background;
             }
+        }
+        .fill {
+            border-radius: 5px;
+            padding: 5px 10px;
+            background: $merah;
+            color: $background;
         }
     }
 }

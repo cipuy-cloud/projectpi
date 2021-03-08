@@ -1,5 +1,5 @@
 const electron = require("electron")
-const {app, BrowserWindow, Menu} = electron
+const {app, BrowserWindow, Menu, globalShortcut} = electron
 const args = process.argv.slice(1)
 const serve = args.some(val => val === "--dev")
 const Channel = require("./channel")
@@ -10,8 +10,6 @@ const indexPath = args.indexOf("--test")
 const isTest = indexPath != -1
 
 
-let channel = new Channel(isTest ? args[indexPath + 1] : DB);
-channel.listen()
 
 
 let mainWindow
@@ -20,8 +18,8 @@ let dataBarangWindow
 const _root = path.join(__dirname, "..", "..")
 
 if (serve) {
-    const all = path.join(_root, "..")
-    require("electron-reload")(all)
+    const bundle = path.join(_root, "..", "build")
+    require("electron-reload")([bundle])
 }
 
 const createWindow = () => {
@@ -41,7 +39,6 @@ const createWindow = () => {
 
     setMainMenu()
 
-
     mainWindow.loadURL(`file://${_root}/resources/index.html`);
 
     mainWindow.once("ready-to-show", () => {
@@ -56,7 +53,17 @@ const createWindow = () => {
 
 
 app.on("ready", async () => {
+    globalShortcut.register(process.platform === "darwin" ? "Alt+Cmd+I" : "Ctrl+Shift+I", () => {
+        let focused = BrowserWindow.getFocusedWindow()
+        focused.webContents.toggleDevTools()
+    })
+
     createWindow()
+    let channel = new Channel(isTest ? args[indexPath + 1] : DB);
+
+    if (mainWindow) {
+        channel.listen(mainWindow)
+    }
 })
 
 
@@ -74,12 +81,11 @@ app.on("activate", () => {
 
 
 const createWindowDataBarang = () => {
-    const currentWindow = BrowserWindow.getFocusedWindow()
 
     let x, y
 
-    if (currentWindow) {
-        const [currentWindowX, currentWindowY] = currentWindow.getPosition();
+    if (mainWindow) {
+        const [currentWindowX, currentWindowY] = mainWindow.getPosition();
         x = currentWindowX;
         y = currentWindowY;
     }
@@ -91,6 +97,7 @@ const createWindowDataBarang = () => {
         title: "Data Barang",
         x,
         y,
+        parent: mainWindow,
         show: false,
         webPreferences: {
             contextIsolation: true,
@@ -115,7 +122,19 @@ const createWindowDataBarang = () => {
 const setMainMenu = () => {
     const template = [
         {
-            label: "File",
+            label: "Application",
+            submenu: [
+                {
+                    label: "Tutup",
+                    click: () => {
+                        channel.close()
+                        app.quit()
+                    }
+                },
+            ]
+        },
+        {
+            label: "Data",
             submenu: [
                 {
                     label: "Data Barang",
@@ -123,142 +142,7 @@ const setMainMenu = () => {
                 },
             ]
         },
-        {
-            label: "View",
-            submenu: [
-                {
-                    label: "Reload",
-                    accelerator: "CmdOrCtrl+R",
-                    click(_, focusedWindow) {
-                        if (focusedWindow) focusedWindow.reload()
-                    }
-                },
-                {
-                    label: "Toggle Developer Tools",
-                    accelerator: process.platform === "darwin" ? "Alt+Command+I" : "Ctrl+Shift+I",
-                    click(item, focusedWindow) {
-                        if (focusedWindow) focusedWindow.webContents.toggleDevTools()
-                    }
-                },
-                {
-                    type: "separator"
-                },
-                {
-                    role: "resetzoom"
-                },
-                {
-                    role: "zoomin"
-                },
-                {
-                    role: "zoomout"
-                },
-                {
-                    type: "separator"
-                },
-                {
-                    role: "togglefullscreen"
-                }
-            ]
-        },
-        {
-            role: "window",
-            submenu: [
-                {
-                    role: "minimize"
-                },
-                {
-                    role: "close"
-                }
-            ]
-        },
-        {
-            role: "help",
-            submenu: [
-                {
-                    label: "Learn More",
-                    click() {require("electron").shell.openExternal("http://electron.atom.io")}
-                }
-            ]
-        }
     ]
-
-    if (process.platform === "darwin") {
-        const name = app.getName()
-        template.unshift({
-            label: name,
-            submenu: [
-                {
-                    role: "about"
-                },
-                {
-                    type: "separator"
-                },
-                {
-                    role: "services",
-                    submenu: []
-                },
-                {
-                    type: "separator"
-                },
-                {
-                    role: "hide"
-                },
-                {
-                    role: "hideothers"
-                },
-                {
-                    role: "unhide"
-                },
-                {
-                    type: "separator"
-                },
-                {
-                    role: "quit"
-                }
-            ]
-        })
-        // Edit menu.
-        template[1].submenu.push(
-            {
-                type: "separator"
-            },
-            {
-                label: "Speech",
-                submenu: [
-                    {
-                        role: "startspeaking"
-                    },
-                    {
-                        role: "stopspeaking"
-                    }
-                ]
-            }
-        )
-        // Window menu.
-        template[3].submenu = [
-            {
-                label: "Close",
-                accelerator: "CmdOrCtrl+W",
-                role: "close"
-            },
-            {
-                label: "Minimize",
-                accelerator: "CmdOrCtrl+M",
-                role: "minimize"
-            },
-            {
-                label: "Zoom",
-                role: "zoom"
-            },
-            {
-                type: "separator"
-            },
-            {
-                label: "Bring All to Front",
-                role: "front"
-            }
-        ]
-    }
-
     Menu.setApplicationMenu(Menu.buildFromTemplate(template))
 }
+

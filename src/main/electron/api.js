@@ -18,6 +18,13 @@ const api = (ipc) => {
         transaksi_get: (transaksi_id) => ipc.invoke(vars.TRANSAKSI_GET, transaksi_id),
         transaksi_cancel: (transaksi_id) => ipc.invoke(vars.TRANSAKSI_CANCEL, transaksi_id),
         transaksi_rm: (transaksi_id) => ipc.invoke(vars.TRANSAKSI_HAPUS, transaksi_id),
+
+
+        listen: (listener_callback) => {
+            ipc.on(vars.BARANG_TAMBAH, () => {
+                listener_callback()
+            })
+        }
     }
 }
 

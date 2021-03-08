@@ -11,8 +11,17 @@ class Controller {
     }
 
 
+    async reload() {
+        await this.model.barang()
+        this.view.render_barang(this.model.data_barang)
+    }
+
     async initial() {
-        let {status, result} = await this.model.data_barang
+        await this.reload()
+
+        window.kasir.listen(() => {
+            this.reload()
+        })
 
         this.view.form_pembayaran?.addEventListener("submit", ev => {
             ev.preventDefault()
@@ -23,30 +32,43 @@ class Controller {
             ev.preventDefault()
         })
 
-        this.view.form_input_barang?.addEventListener("submit", ev => {
+        this.view.form_input_barang?.addEventListener("submit", async (ev) => {
             ev.preventDefault()
+
+            let kodebarang = parseInt(this.view.form_cari?.value)
+            let harga = parseInt(ev.target.elements["harga"].value)
+            let namabarang = ev.target.elements["namabarang"].value
+            let stok = parseInt(ev.target.elements["stok"].value)
+
+            window.kasir.barang_tambah({kodebarang, namabarang, harga, stok})
+            await this.model.barang()
+            this.find_barang(kodebarang)
+            this.view.form_input_barang.reset()
         })
 
 
-        this.view.form_cari?.addEventListener("keyup", async ({target}) => {
-            const is_hidden = () => !this.view.form_input_barang?.classList.contains("hidden") && this.view.form_input_barang?.classList.toggle("hidden")
+        this.view.form_cari?.addEventListener("keyup", ({target}) => {
+            this.find_barang(target.value)
+        })
 
-            if (target.value) {
-                let barang = result?.find((t) => t.id === parseInt(target.value))
-                if (barang) {
-                    is_hidden()
-                    this.view.render_barang([barang])
-                }
-                else {
-                    this.view.form_input_barang?.classList.remove("hidden")
-                    this.view.render_barang()
-                }
-            } else {
+    }
+
+    find_barang(value) {
+
+        const is_hidden = () => !this.view.form_input_barang?.classList.contains("hidden") && this.view.form_input_barang?.classList.toggle("hidden")
+        if (value) {
+            let barang = this.model.data_barang?.find((t) => t.kodebarang === parseInt(value))
+            if (barang) {
                 is_hidden()
+                this.view.render_barang([barang])
+            } else {
+                this.view.form_input_barang?.classList.remove("hidden")
+                this.view.render_barang()
             }
-        })
-
-        status ? this.view.render_barang(result) : this.view.render_barang()
+        } else {
+            is_hidden()
+            this.view.render_barang(this.model.data_barang)
+        }
     }
 }
 
@@ -70,11 +92,14 @@ class View {
 
                 return `
                     <li id="${barang.id}" class="container row baseline between"> 
-                        <span id="id_barang">ID: ${barang.id}</span>
+                        <div class="tr">kB-${barang.kodebarang}</div>
                         <div class="item">
-                            <h1 class="left">${barang.nama_barang}</h1>
+                            <h1 class="left">${barang.namabarang}</h1>
                         </div>
-                        <h3 class="price">${uang}</h3>
+                        <h3 class="border">
+                            ${uang}
+                        </h3>
+                        <div class="fill">${barang.stok}</div>
                     </li>
                 `.trim()
             }).join(" ")
@@ -89,7 +114,11 @@ class View {
 
 class Model {
     constructor() {
-        this.data_barang = window.kasir.barang_get()
+        this.barang()
+    }
+    async barang() {
+        let {status, result} = await window.kasir.barang_get()
+        this.data_barang = status && result.length > 0 ? result : []
     }
 }
 
