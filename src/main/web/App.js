@@ -74,7 +74,6 @@ class Controller {
 
 class View {
 
-
     constructor() {
         // element
         this.cari_barang = document.getElementById("cari_barang")
@@ -83,28 +82,45 @@ class View {
         this.form_pembayaran = document.getElementById("bayar")
         this.form_input_barang = document.getElementById("form_input_barang")
 
+
     }
 
 
-    render_barang(data_barang = []) {
-        let list = data_barang.length == 0 ? "<li class=\"container\"><div class=\"item\"><h1 class=\"left\">Barang Kosong</h1></div></li>".trim()
-            : data_barang.map((barang) => {
-                let uang = new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR"}).format(barang.harga)
+    itemOnClick() {}
 
-                return `
-                    <li id="${barang.id}" class="container row baseline between"> 
-                        <div class="tr">kB-${barang.kodebarang}</div>
-                        <div class="item">
-                            <h1 class="left">${barang.namabarang}</h1>
-                        </div>
-                        <div class="fill">${barang.stok}</div>
-                        <h3 class="border">
-                            ${uang}
-                        </h3>
-                    </li>
-                `.trim()
-            }).join(" ")
-        this.list_barang.innerHTML = list
+    render_barang(data_barang = []) {
+        let is_empty = data_barang.length == 0
+        let li = ({id, stok, namabarang, kodebarang, harga}) => {
+            let el = document.createElement("li")
+            el.className = "container"
+            if (id) {
+                el.setAttribute("id", id)
+                el.addEventListener("click", () => console.log(id))
+            }
+
+            let uang = new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR"}).format(harga)
+
+            let elStok = stok > 1 ? `<div class="fill">${stok}</div>` : ""
+
+            let elHarga = harga ? `<h3 class="border">${uang}</h3>` : ""
+
+            let elKodeBarang = kodebarang ? `<div class="tr">kB-${kodebarang}</div>` : ""
+
+            el.innerHTML = (elKodeBarang
+                + `<div class="item"><h1 class="left">${namabarang ?? "Barang Kosong"}</h1></div>`
+                + elStok
+                + elHarga).trim()
+
+
+            return el
+        }
+
+        is_empty ?
+            this.list_barang.append(li())
+            : data_barang.forEach(barang => {
+                this.list_barang.append(li(barang))
+            })
+
     }
 
 

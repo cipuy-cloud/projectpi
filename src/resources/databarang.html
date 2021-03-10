@@ -8,40 +8,36 @@
 </head>
 
 <body>
-    <div id="app" class="container row between">
-        <div id="left" class="item container column ">
-            <div class="drag head">
-                <h1>Data</h1>
-                <h2>Barang</h2>
-            </div>
-            <div class="container column ">
-                <div class="item box center form">
-                    <form id="cari_barang" class="full-width">
-                        <div class="item full-width">
-                            <input name="kodebarang" type="number" placeholder="Cari barang" />
-                        </div>
-                    </form>
-                    <form id="form_input_barang" class="hidden full-width container column between">
-                        <div class="item full-width">
-                            <input name="namabarang" type="text" placeholder="Nama Barang" />
-                        </div>
-                        <div class="item full-width container row baseline between">
-                            <div class="item center">
-                                <input name="harga" type="number" placeholder="Harga Barang" />
-                            </div>
-                            <div class="item center">
-                                <input name="stok" type="number" placeholder="Stok" />
-                            </div>
-                            <div class="item center">
-                                <button type="submit" class="btn red">Tambah</button>
-                            </div>
-                        </div>
-                    </form>
+    <div id="app" class="container column between">
+        <div class="no-flex box center full-width">
+            <form id="cari_barang" class="item full-width">
+                <div class="item full-width">
+                    <input name="kodebarang" type="number" placeholder="Cari barang" />
                 </div>
-                <ul id="list_barang" class="item box"></ul>
-            </div>
-
+            </form>
+            <form id="form_input_barang" class="item hidden full-width container column between">
+                <div class="item full-width">
+                    <input name="namabarang" type="text" placeholder="Nama Barang" />
+                </div>
+                <div class="auto full-width container row baseline between">
+                    <div class="item center">
+                        <input name="harga" type="number" placeholder="Harga Barang" />
+                    </div>
+                    <div class="item center">
+                        <input name="stok" type="number" placeholder="Stok" />
+                    </div>
+                    <div class="item center">
+                        <button type="submit" class="btn red radius full-width">Tambah</button>
+                    </div>
+                </div>
+            </form>
         </div>
+        <div class="auto container row between" style="max-height: 40px;">
+            <button class="auto btn red full-width">Tandai</button>
+            <button class="auto btn red full-width">Hapus</button>
+        </div>
+        <ul id="list_barang" class="item box full-width"></ul>
+    </div>
 </body>
 <script src="../../build/bundle.js"></script>
 

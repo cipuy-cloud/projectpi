@@ -11,7 +11,7 @@ const isTest = indexPath != -1
 
 
 
-
+let channel = new Channel(isTest ? args[indexPath + 1] : DB)
 let mainWindow
 let dataBarangWindow
 
@@ -59,8 +59,8 @@ app.on("ready", async () => {
         focused.webContents.toggleDevTools()
     })
 
+
     createWindow()
-    let channel = new Channel(isTest ? args[indexPath + 1] : DB);
 
     if (mainWindow) {
         channel.listen(mainWindow)

@@ -89,14 +89,13 @@ $merah2:        #FADCD9;
 #list_barang {
     @extend %p0m0;
     cursor: pointer;
-    max-width: 90%;
     width: 100%;
-    margin: 10px auto;
+    margin: 0px auto;
     overflow-x: hidden;
     overflow-y: auto;
     max-height: inherit;
     li {
-        padding: 8px 15px;
+        padding: 8px 12px;
         transition: background 150ms ease-in-out;
         &:hover {
             background: $background2;
@@ -152,20 +151,21 @@ $merah2:        #FADCD9;
 
 .btn {
     @extend %fontBold;
-    padding: 8px 15px;
-    border-radius: 5px;
+    padding: 10px 15px;
     border: 0px;
     background: $background;
     cursor: pointer;
-
-    &.big {
-        padding:  10px 15px;
-        border-radius: 8px;
-        @extend .full-width;
-    }
+    transition: opacity 150ms ease-in-out;
+        
     &.red {
         background: $merah;
         color: $background;
+    }
+    &.radius {
+        border-radius: 5px;
+    }
+    &:hover {
+        opacity: 0.8;
     }
 }
 
@@ -219,17 +219,20 @@ input {
         flex-direction: row;
     }
     .auto {
-        flex: 0;
+        flex: auto;
     }
     .item {
-        flex: auto;
+        flex: 1;
+    }
+    .no-flex {
+        flex: 0;
     }
 }
 
 
 .head {
     display: inline-flex;
-    padding: 20px;
+    padding: 15px;
     @extend %width;
     text-align: center;
     flex: 0 !important;
@@ -253,19 +256,23 @@ h1,h2,h3,h4,h5 {
 
 .box {
     background: $background;
-    border-radius: 10px;
     height: auto;
     position: relative;
     margin: auto;
     box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1),0 4px 6px -2px rgba(0,0,0,0.05);
     position: relative;
+
+    &.radius {
+        border-radius: 10px;
+    }
+
     &.form {
         width: 90%;
     }
+    
     .item {
         margin: 0px 8px;
         padding: 0px 5px;
-
     }
     &.center {
         .item {
@@ -298,3 +305,6 @@ h1,h2,h3,h4,h5 {
     display: none;
 }
 
+.margin-tb {
+    margin: 15px auto;
+}
