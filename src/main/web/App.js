@@ -112,7 +112,13 @@ class View {
         this.cari_barang = document.getElementById("cari_barang")
         this.form_cari = this.cari_barang.elements[0]
         this.list_barang = document.getElementById("list_barang")
+
+
+        // element ini hanya terdapat di main Window
         this.form_pembayaran = document.getElementById("bayar")
+
+
+        // element ini hanya terdapat di databarang
         this.form_input_barang = document.getElementById("form_input_barang")
         this.cotainer_btn = document.getElementById("container_btn")
         this.btn_hapus = this.cotainer_btn?.children.namedItem("hapus")
