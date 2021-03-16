@@ -9,22 +9,24 @@
 
 <body>
     <div id="app" class="container row between">
-        <div id="left" class="auto container column ">
-            <div class="drag head">
-                <h1>Aplikasi</h1>
-                <h2>Kasir</h2>
+        <div id="left" class="item container column start">
+            <!-- <div class="no-flex drag head"> -->
+            <!-- <h1>Aplikasi</h1> -->
+            <!-- <h2>Kasir</h2> -->
+            <!-- </div> -->
+            <div class="no-flex  box radius center form margin-tb width-md">
+                <form id="cari_barang" class="full-width">
+                    <div class="item full-width">
+                        <input type="number" placeholder="Cari barang" />
+                    </div>
+                </form>
             </div>
-            <div class="container column">
-                <div class="no-flex box radius center form margin-tb">
-                    <form id="cari_barang" class="full-width">
-                        <div class="item full-width">
-                            <input type="number" placeholder="Cari barang" />
-                        </div>
-                    </form>
+            <div class="auto container column box radius margin-tb width-md">
+                <ul id="list_barang" class="item full-width"></ul>
+                <div id="container_btn" class="auto hidden container row between" style="max-height: 40px;">
+                    <button id="tambah" class="auto btn red full-width">Tambah Kerajang</button>
                 </div>
-                <ul id="list_barang" class="item box" />
             </div>
-
         </div>
         <div id="right" class="item container column between">
             <div class="item drag head">
@@ -32,24 +34,27 @@
                 <h2>Belanja</h2>
             </div>
             <div class="item container column between">
-                <ul id="keranjang_barang" class="auto">
-                    <li class="container row baseline between">
-                        <h1 class="item">Saniter Fabric Disinfectant 200+30ml</h1>
-                        <h3 class="item price">
-                            Rp 120.000
-                        </h3>
-                    </li>
+                <ul id="keranjang_barang" class="auto full-width">
+                    <!-- <li class="auto container row center"> -->
+                    <!-- <div class="item"> -->
+                    <!-- <h1 class="left">Saniter Fabric Disinfectant 200+30ml</h1> -->
+                    <!-- </div> -->
+                    <!-- <h3 class="item right"> -->
+                    <!-- Rp 120.000 -->
+                    <!-- </h3> -->
+                    <!-- </li> -->
                 </ul>
                 <div class="no-flex full-width padding-md">
-                    <form id="bayar" class="container column between baseline">
+                    <form id="bayar" class="hidden container column between baseline">
                         <div class="item center full-width">
                             <input class="full-width" type="text" placeholder="Total Pembayaran" />
                         </div>
-                        <div class="total container row between full-width">
+                        <div class="container row between full-width margin-tb">
                             <h1 class="item left">Total</h1>
                             <h3 class="item right">Rp 120.000</h3>
                         </div>
-                        <button type="submit" class="item btn red full-width radius">Bayar</button>
+                        <button type="submit" class="item btn green full-width radius">Bayar</button>
+                        <button type="cancel" class="item btn red full-width radius">Cancel</button>
                     </form>
                 </div>
             </div>

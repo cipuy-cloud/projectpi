@@ -1,5 +1,5 @@
 const electron = require("electron")
-const {app, BrowserWindow, Menu, globalShortcut} = electron
+const {app, BrowserWindow, Menu, globalShortcut, dialog} = electron
 const args = process.argv.slice(1)
 const serve = args.some(val => val === "--dev")
 const Channel = require("./channel")
@@ -19,7 +19,7 @@ const _root = path.join(__dirname, "..", "..")
 
 if (serve) {
     const bundle = path.join(_root, "..", "build")
-    const resources = path.join(_root, "resources")
+    const resources = path.join(_root, "resources/*.*")
     require("electron-reload")([bundle, resources])
 }
 
