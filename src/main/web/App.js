@@ -18,7 +18,7 @@ class Controller {
         await this.model.barang()
         await this.model.keranjang()
         this.view.render_barang(this.model.data_barang)
-        this.view.render_keranjang(this.model.data_keranjang)
+        if (this.view.keranjang) this.view.render_keranjang(this.model.data_keranjang)
     }
 
     async initial() {
@@ -217,7 +217,6 @@ class View {
     }
 
     render_keranjang(data_barang = []) {
-        console.log(data_barang)
         // buat keranjang kosong
         this.keranjang_barang.innerHTML = ""
 
@@ -303,7 +302,6 @@ class Model {
     async barang_removeSelected() {
         for (let data_barang_id of this.barang_arr) {
             window.kasir.barang_rm(data_barang_id)
-            this.view.render_keranjang()
         }
     }
 
