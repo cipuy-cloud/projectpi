@@ -22,6 +22,11 @@ $hijau:         #18a558;
     font-family: Quicksand; 
 }
 
+
+%padding {
+  padding: 8px 10px;
+}
+
 %fontNormal {
     @extend %font;
     font-weight: normal;
@@ -123,7 +128,7 @@ $hijau:         #18a558;
             opacity: .6;
         }
         .border {
-            padding: 5px 10px;
+            @extend %padding;
             margin: 0px 10px;
             border-radius: 5px;
             border: 2px solid $merah;
@@ -137,8 +142,8 @@ $hijau:         #18a558;
             }
         }
         .fill {
+            @extend %padding;
             border-radius: 5px;
-            padding: 5px 10px;
             background: $merah;
             color: $background;
         }
@@ -166,9 +171,10 @@ $hijau:         #18a558;
 }
 
 
+
 .btn {
     @extend %fontBold;
-    padding: 10px 15px;
+    @extend %padding;
     border: 0px;
     background: $background;
     cursor: pointer;
@@ -192,8 +198,8 @@ $hijau:         #18a558;
 
 
 input {
+    @extend %padding;
     display: block;
-    padding: 10px 15px;
     border-radius: 8px;
     max-width: 100%;
     width: 100%;

@@ -18,7 +18,7 @@ class Controller {
         await this.model.barang()
         await this.model.keranjang()
         this.view.render_barang(this.model.data_barang)
-        if (this.view.keranjang) this.view.render_keranjang(this.model.data_keranjang)
+        this.view.render_keranjang(this.model.data_keranjang)
     }
 
     async initial() {
@@ -50,9 +50,15 @@ class Controller {
                 , namabarang = ev.target.elements["namabarang"].value
                 , stok = parseInt(ev.target.elements["stok"].value)
 
+            // input barang ke api
             window.kasir.barang_tambah({kodebarang, namabarang, harga, stok})
+            // reload list barang
             await this.model.barang()
+
+            // jika barang terinput tampilkan hanya barang yang terinput
             this.find_barang(kodebarang)
+
+            // kosongin form input 
             this.view.form_input_barang.reset()
         })
 
@@ -79,6 +85,13 @@ class Controller {
 
             //  reload keranjang
             this.reload()
+        })
+
+        let allElJumlah = document.querySelectorAll("#jumlah")
+        allElJumlah?.forEach((el) => {
+            el.addEventListener("change", ({target}) => {
+                console.log(target.value)
+            })
         })
     }
 
@@ -167,8 +180,7 @@ class View {
 
 
     create_li({barang = {}, emptyMsg}) {
-
-        let {id, stok, namabarang, kodebarang, harga} = barang
+        let {id, stok, namabarang, kodebarang, harga, jumlah} = barang
 
         let {barang_getSelected} = this.hook ?? {}
 
@@ -181,12 +193,21 @@ class View {
         el.className = `container row between center padding-md ${is_selected ? "selected" : ""}`.trim()
 
         if (id) {
-            // kalo terdapat id di argument set idnya per element list
+            // kalo terdapat objek id di barang set idnya per element list
             el.id = id
 
+            // jika objek jumlah engga ada
             // nambahin fungsi click per element list
-            el.addEventListener("click", () => this.handleOnClickMenuList(el, id))
+            if (!jumlah) {
+                el.addEventListener("click", () => this.handleOnClickMenuList(el, id))
+            }
         }
+
+        // kalo ada objek jumlah di barang, kali jumlah * harga
+        if (jumlah) {
+            harga = jumlah * harga
+        }
+
 
         // ubah nomor ke format uang rupiah
         let uang = new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR"}).format(harga)
@@ -196,6 +217,8 @@ class View {
             , elStok = stok ? `<div class="fill tr left" style="min-width: 100px;">stok: ${stok}</div>` : ""
             , elHarga = harga ? `<h3 class="border" style="min-width: 130px;">${uang}</h3>` : ""
             , elKodeBarang = kodebarang ? `<div class="margin-lr tr">Kode: ${kodebarang}</div>` : ""
+            , elJumlah = jumlah ? `<input id="jumlah" type="number" value=${jumlah} class="margin-tb"></input>` : ""
+
 
         el.innerHTML = `
                 <div class="auto container column baseline between">
@@ -203,11 +226,12 @@ class View {
                         ${elNama}
                         ${elKodeBarang}
                     </div>
-                    <div class="item">
-                         ${elStok}
+                    <div class="item container row baseline">
+                        ${elStok}
                     </div>
                 </div>
                 <div class="no-flex">
+                     ${elJumlah}
                      ${elHarga}  
                 </div>
                 `
@@ -216,17 +240,17 @@ class View {
         return el
     }
 
-    render_keranjang(data_barang = []) {
+    render_keranjang(data_keranjang = []) {
         // buat keranjang kosong
         this.keranjang_barang.innerHTML = ""
 
         // check barang di keranjang kosong apa engga
-        let is_empty = data_barang?.length == 0
+        let is_empty = data_keranjang?.length == 0
 
         // kalo barang kosong render hanya satu barang kosong kalo engga render barang 
         is_empty
             ? this.keranjang_barang.append(this.create_li({emptyMsg: "Keranjang Kosong"})) :
-            data_barang.forEach(barang => this.list_barang.append(this.create_li({barang})))
+            data_keranjang.forEach(barang => this.keranjang_barang.append(this.create_li({barang})))
     }
 
     // render list barang
