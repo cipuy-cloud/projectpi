@@ -32,6 +32,10 @@ $hijau:         #18a558;
     font-weight: normal;
 }
 
+%inlineFlex {
+    display: inline-flex;
+}
+
 %fontBold {
     @extend %font;
     font-weight: bold;
@@ -117,8 +121,11 @@ $hijau:         #18a558;
         &:hover, &.selected {
             background: $merah2;
             color: $merah;
+            input {
+                background: $background;
+            }
         }
-         * {
+        *{
             font-size: .6rem !important;
             @extend %fontBold;
             text-transform: capitalize;
@@ -206,6 +213,7 @@ input {
     background: $merah2;
     border: 1px solid $background2;
     outline: none;
+    transition: background 150ms ease-in-out;
 }
 
 
@@ -264,7 +272,7 @@ input {
 
 
 .head {
-    display: inline-flex;
+    @extend %inlineFlex;
     padding: 15px;
     @extend %width;
     text-align: center;
@@ -334,6 +342,10 @@ h1,h2,h3,h4,h5 {
     text-align: right;
 }
 
+.middle {
+    align-items: center;
+}
+
 .hidden {
     display: none;
 }
@@ -342,7 +354,9 @@ h1,h2,h3,h4,h5 {
     margin-left: 10px  !important;
     margin-right: 10px !important;
 }
-
+.inlineFlex {
+        @extend %inlineFlex;
+}
 .margin-tb {
     margin-top: 10px  !important;
     margin-bottom: 10px  !important;

@@ -92,11 +92,12 @@ describe("Electron", function () {
 
         it("keranjang_tambah", async () => {
             let {result} = await api.barang_get()
-            for (br of result.slice(0, 3)) {
-                let keranjang = await api.keranjang_tambah(transaksiID, br.id, 1)
+            for (let br of result.slice(0, 3)) {
+                let keranjang = await api.keranjang_tambah({transaksi_id: transaksiID, data_barang_id: br.id, jumlah: 1})
                 assert.strictEqual(keranjang.status, true)
             }
         })
+
 
         it("keranjang_get", async () => {
             let {status, result} = await api.keranjang_get(transaksiID)

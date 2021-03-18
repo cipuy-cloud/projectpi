@@ -18,7 +18,10 @@ class Controller {
         await this.model.barang()
         await this.model.keranjang()
         this.view.render_barang(this.model.data_barang)
-        this.view.render_keranjang(this.model.data_keranjang)
+        if (this.view.keranjang_barang && this.view.form_pembayaran) {
+            this.view.render_keranjang(this.model.data_keranjang)
+            this.model.data_keranjang.length > 0 && this.view.form_pembayaran.classList.contains("hidden") ? this.view.form_pembayaran.classList.remove("hidden") : this.view.form_pembayaran.classList.add("hidden")
+        }
     }
 
     async initial() {
@@ -69,7 +72,7 @@ class Controller {
         })
 
         // ngeset fungsi callback dari Model ke View untuk fungsi click menu barang
-        this.view.setHook(this.handleTandai())
+        this.view.setHook(this.brigeEvent())
 
         // fungsi klik hapus untuk menghapus yang di tandai
         this.view.btn_hapus?.addEventListener("click", async () => {
@@ -87,12 +90,6 @@ class Controller {
             this.reload()
         })
 
-        let allElJumlah = document.querySelectorAll("#jumlah")
-        allElJumlah?.forEach((el) => {
-            el.addEventListener("change", ({target}) => {
-                console.log(target.value)
-            })
-        })
     }
 
 
@@ -126,11 +123,12 @@ class Controller {
         }
     }
 
-    // fungsi jembatan fungsi callback dari Model ke View untuk fungsi click menu barang
-    handleTandai() {
+    // fungsi jembatan fungsi callback dari Model ke View 
+    brigeEvent() {
         return {
             barang_getSelected: (id) => this.model.barang_getSelected(id),
             barang_setSelected: (id) => this.model.barang_setSelected(id),
+            keranjang_tambah: (barang) => this.model.keranjang_tambah(barang)
         }
     }
 }
@@ -178,9 +176,13 @@ class View {
         is_empty && is_container_btn_hidden ? this.cotainer_btn?.classList.add("hidden") : this.cotainer_btn?.classList.remove("hidden")
     }
 
+    handleOnChangeJumlah(barang) {
+        let {keranjang_tambah} = this.hook ?? {}
+        keranjang_tambah?.(barang)
+    }
 
     create_li({barang = {}, emptyMsg}) {
-        let {id, stok, namabarang, kodebarang, harga, jumlah} = barang
+        let {id, stok, namabarang, kodebarang, harga, jumlah, data_barang_id} = barang
 
         let {barang_getSelected} = this.hook ?? {}
 
@@ -203,26 +205,20 @@ class View {
             }
         }
 
-        // kalo ada objek jumlah di barang, kali jumlah * harga
-        if (jumlah) {
-            harga = jumlah * harga
-        }
-
-
         // ubah nomor ke format uang rupiah
         let uang = new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR"}).format(harga)
 
         // element list 
         let elNama = `<h1 class="left">${namabarang ?? emptyMsg}</h1>`
-            , elStok = stok ? `<div class="fill tr left" style="min-width: 100px;">stok: ${stok}</div>` : ""
+            , elStok = stok && !jumlah ? `<div class="fill tr left" style="min-width: 100px;">stok: ${stok}</div>` : ""
             , elHarga = harga ? `<h3 class="border" style="min-width: 130px;">${uang}</h3>` : ""
-            , elKodeBarang = kodebarang ? `<div class="margin-lr tr">Kode: ${kodebarang}</div>` : ""
-            , elJumlah = jumlah ? `<input id="jumlah" type="number" value=${jumlah} class="margin-tb"></input>` : ""
+            , elKodeBarang = kodebarang && !jumlah ? `<div class="margin-lr tr">Kode: ${kodebarang}</div>` : ""
+            , elJumlah = jumlah ? `<input id="${id}" name="jumlah" type="number" value=${jumlah} class="margin-lr" style="max-width: 50px;"></input>` : ""
 
 
         el.innerHTML = `
                 <div class="auto container column baseline between">
-                    <div class="item container row center margin-tb">
+                    <div class="item container row center margin-tb"> 
                         ${elNama}
                         ${elKodeBarang}
                     </div>
@@ -230,12 +226,17 @@ class View {
                         ${elStok}
                     </div>
                 </div>
-                <div class="no-flex">
+                <div class="inlineFlex middle">
                      ${elJumlah}
+                     ${jumlah ? "<span class='tr center'>&times;</span>" : ""}
                      ${elHarga}  
                 </div>
-                `
+                `.trim()
 
+        if (data_barang_id) {
+            let elJumlahByName = el.querySelector("input[name='jumlah']")
+            elJumlahByName?.addEventListener("change", ({target}) => this.handleOnChangeJumlah({data_barang_id, jumlah: target.value}))
+        }
 
         return el
     }
@@ -311,11 +312,19 @@ class Model {
     }
 
 
-    async keranjang_tambah() {
-        let trasaksi_id = (await this.trasaksi)?.id
-        if (trasaksi_id && !this.barang_isEmpty()) {
-            for (let barang_id of this.barang_arr) {
-                window.kasir.keranjang_tambah(trasaksi_id, barang_id, 1)
+    async keranjang_tambah(barang) {
+        let transaksi_id = (await this.trasaksi)?.id
+        if (transaksi_id) {
+            if (barang) {
+                let {data_barang_id, jumlah} = barang
+                window.kasir.keranjang_tambah({transaksi_id, data_barang_id, jumlah})
+            } else {
+                if (!this.barang_isEmpty()) {
+                    for (let data_barang_id of this.barang_arr) {
+                        window.kasir.keranjang_tambah({transaksi_id, data_barang_id, jumlah: null})
+                    }
+                }
+
             }
             await this.keranjang()
         }

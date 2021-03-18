@@ -5,7 +5,7 @@ const vars = require("./env")
 const api = (ipc) => {
     return {
         keranjang_bayar: (transaksi_id) => ipc.invoke(vars.KERANJANG_BAYAR, transaksi_id),
-        keranjang_tambah: (transaksi_id, data_barang_id, jumlah) => ipc.invoke(vars.KERANJANG_TAMBAH, transaksi_id, data_barang_id, jumlah),
+        keranjang_tambah: (barang) => ipc.invoke(vars.KERANJANG_TAMBAH, barang),
         keranjang_get: (transaksi_id) => ipc.invoke(vars.KERANJANG_GET, transaksi_id),
         keranjang_rm: (data_barang_id) => ipc.invoke(vars.KERANJANG_HAPUS, data_barang_id),
 

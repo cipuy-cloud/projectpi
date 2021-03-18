@@ -56,8 +56,16 @@ class Channel {
             return result
         })
 
-        ipcMain.handle(vars.KERANJANG_TAMBAH, (_event, transaksi_id, data_barang_id, jumlah) => {
-            return this.keranjang.insert({transaksi_id, data_barang_id, jumlah})
+        ipcMain.handle(vars.KERANJANG_TAMBAH, async (_event, {transaksi_id, data_barang_id, jumlah}) => {
+            // check barang ada atau tidak
+            let {result} = await this.keranjang.barangID(data_barang_id)
+
+
+
+            // kalo barang ada update dengan jumlah
+            // kalo engga ada insert keranjang baru
+            return result ? this.keranjang.handleUpdateJumlah({data_barang_id, jumlah: jumlah ?? result.jumlah + 1})
+                : this.keranjang.insert({transaksi_id, data_barang_id, jumlah: 1})
         })
 
         ipcMain.handle(vars.KERANJANG_BAYAR, (_event, transaksi_id) => {
@@ -244,6 +252,9 @@ class Keranjang extends Table {
         return this.dao?.run(`INSERT INTO ${this.name}(transaksi_id, data_barang_id, jumlah) VALUES(${transaksi_id}, ${data_barang_id}, ${jumlah})`)
     }
 
+    handleUpdateJumlah({data_barang_id, jumlah}) {
+        return this.dao?.run(`UPDATE ${this.name} SET jumlah=${jumlah} WHERE data_barang_id=${data_barang_id}`)
+    }
 
     barangID(id) {
         return this.dao?.get(
