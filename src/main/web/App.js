@@ -233,9 +233,39 @@ class View {
             : this.cotainer_btn?.classList.remove("hidden")
     }
 
-    handleOnChangeJumlah(barang) {
+    handleOnChangeJumlah(el, {namabarang, stok, data_barang_id}) {
         let {keranjang_tambah} = this.hook ?? {}
-        keranjang_tambah?.(barang)
+        // kalo jumlah barang lebih dari stok set julah ke stok 
+        if (el?.value > stok) {
+            this.handleModal({
+                title: namabarang,
+                body: `stok barang ${namabarang} hanya ${stok}`
+            }, () => {
+                keranjang_tambah?.({data_barang_id, jumlah: stok})
+                el.value = stok
+            })
+        }
+        // kalo jumlah barang kurang dari 0 atau 0, hapus atau set ke 1
+        if (el?.value == 0 || el?.value < 0) {
+            this.handleModal(
+                {
+                    title: namabarang,
+                    body: `hapus barang ${namabarang} dari keranjang`,
+                    okMsg: "Hapus"
+                },
+                () => {
+                    keranjang_tambah?.({data_barang_id, jumlah: 1})
+                    el.value = 1
+                },
+                () => {
+                    keranjang_tambah?.({data_barang_id, jumlah: 1})
+                    el.value = 1
+
+                }
+            )
+
+        }
+
     }
 
     create_li({barang = {}, emptyMsg}) {
@@ -291,23 +321,16 @@ class View {
 
         if (data_barang_id) {
             let elJumlahByName = el.querySelector("input[name='jumlah']")
+            // handle perubahan jumlah
+            this.handleOnChangeJumlah(elJumlahByName, barang)
             elJumlahByName?.addEventListener("change", ({target}) => {
-                this.handleOnChangeJumlah({data_barang_id, jumlah: target.value})
-
+                this.handleOnChangeJumlah(target, barang)
             })
-            if (elJumlahByName.value > stok) {
-                this.handleModal({
-                    title: namabarang,
-                    body: `stok barang ${namabarang} hanya ${stok}`
-                }, () => {
-                    this.handleOnChangeJumlah({data_barang_id, jumlah: stok})
-                    elJumlahByName.value = stok
-                })
-            }
         }
 
         return el
     }
+
 
     render_keranjang(data_keranjang = []) {
         // buat keranjang kosong
