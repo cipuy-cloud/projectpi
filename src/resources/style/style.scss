@@ -92,6 +92,35 @@ $hijau:         #18a558;
     }
 }
 
+
+#modal {
+    z-index: 1;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    width: 100%;
+    #bg {
+        background: $black;
+        opacity: 0.6;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 100%;
+        width: 100%;
+    }
+    .container {
+        margin: auto;
+        max-width: 300px;    
+        height: max-content;
+        width: 100%;
+    }
+}
+
 #right {
     text-align: center;
     background: $background;

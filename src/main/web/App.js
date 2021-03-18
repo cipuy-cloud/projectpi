@@ -17,10 +17,19 @@ class Controller {
     async reload() {
         await this.model.barang()
         await this.model.keranjang()
+
         this.view.render_barang(this.model.data_barang)
+
         if (this.view.keranjang_barang && this.view.form_pembayaran) {
+
             this.view.render_keranjang(this.model.data_keranjang)
-            this.model.data_keranjang.length > 0 && this.view.form_pembayaran.classList.contains("hidden") ? this.view.form_pembayaran.classList.remove("hidden") : this.view.form_pembayaran.classList.add("hidden")
+
+            // kalo data_keranjang engga kosong, tampilin 
+            if (this.model.data_keranjang.length > 0) {this.view.form_pembayaran.classList.remove("hidden")}
+            else {
+                // kalo form pembayaran show add hidden 
+                if (!this.view.form_pembayaran.contains("hidden")) this.view.form_pembayaran.classList.add("hidden")
+            }
         }
     }
 
@@ -145,7 +154,8 @@ class View {
         // element ini hanya terdapat di main Window
         this.form_pembayaran = document.getElementById("bayar")
         this.keranjang_barang = document.getElementById("keranjang_barang")
-
+        // modal
+        this.modal = document.getElementById("modal")
 
         // element ini hanya terdapat di databarang
         this.form_input_barang = document.getElementById("form_input_barang")
@@ -160,6 +170,47 @@ class View {
     }
 
 
+    // nampilin modal
+    handleModal({title, body, okMsg}, eventOk, eventCancel) {
+        // modal element
+        let elTitle = this.modal.querySelector("#title")
+        let elMsg = this.modal.querySelector("#msg")
+        let elOk = this.modal.querySelector("#ok")
+        let elOkMsg = this.modal.querySelector("#okMsg")
+        let elCancel = this.modal.querySelector("#cancel")
+
+        // judul
+        elTitle.innerHTML = title
+        // pesan
+        elMsg.innerHTML = body
+
+        // jika button ok
+        if (eventOk) {
+            if (okMsg) elOkMsg.innerHTML = okMsg
+            elOk.classList.remove("hidden")
+            elOk.addEventListener("click", () => {
+                eventOk()
+                this.modal.classList.add("hidden")
+                elOk.classList.add("hidden")
+            })
+
+        }
+
+        // jika button cancel
+        if (eventCancel) {
+            elCancel.classList.remove("hidden")
+            elCancel.addEventListener("click", () => {
+                eventOk()
+                this.modal.classList.add("hidden")
+                elCancel.classList.add("hidden")
+            })
+
+        }
+
+        // show modal
+        this.modal.classList.remove("hidden")
+    }
+
     // kalo list barang ke klik jalanin fungsi ini
     handleOnClickMenuList(el, data_barang_id) {
 
@@ -167,13 +218,13 @@ class View {
 
         let {is_contain, is_empty} = barang_setSelected?.(data_barang_id),
             is_classExist = el.classList.contains("selected"),
-            is_container_btn_hidden = !this.container_btn?.includes("hidden")
+            is_container_btn_hidden = !this.container_btn?.classList.contains("hidden")
 
         // kalo kelas `selected engga ada ama kalo id ini terdapat di barang_arr di model 
         !is_classExist && is_contain ? el.classList.add("selected") : el.classList.remove("selected")
 
         // kalo barang_arr kosong ama kalo container_btn terdapat di view
-        is_empty && is_container_btn_hidden ? this.cotainer_btn?.classList.add("hidden") : this.cotainer_btn?.classList.remove("hidden")
+        is_empty ? (is_container_btn_hidden && this.cotainer_btn?.classList.add("hidden")) : this.cotainer_btn?.classList.remove("hidden")
     }
 
     handleOnChangeJumlah(barang) {
@@ -215,7 +266,6 @@ class View {
             , elKodeBarang = kodebarang && !jumlah ? `<div class="margin-lr tr">Kode: ${kodebarang}</div>` : ""
             , elJumlah = jumlah ? `<input id="${id}" name="jumlah" type="number" value=${jumlah} class="margin-lr" style="max-width: 50px;"></input>` : ""
 
-
         el.innerHTML = `
                 <div class="auto container column baseline between">
                     <div class="item container row center margin-tb"> 
@@ -235,7 +285,20 @@ class View {
 
         if (data_barang_id) {
             let elJumlahByName = el.querySelector("input[name='jumlah']")
-            elJumlahByName?.addEventListener("change", ({target}) => this.handleOnChangeJumlah({data_barang_id, jumlah: target.value}))
+            elJumlahByName?.addEventListener("change", ({target}) => {
+                if (target.value > stok) {
+                    this.handleModal({
+                        title: namabarang,
+                        body: `stok barang ${namabarang} hanya ${stok}`
+                    }, () => {
+                        this.handleOnChangeJumlah({data_barang_id, jumlah: stok})
+                        elJumlahByName.value = stok
+                    })
+                } else {
+                    this.handleOnChangeJumlah({data_barang_id, jumlah: target.value})
+                }
+
+            })
         }
 
         return el
