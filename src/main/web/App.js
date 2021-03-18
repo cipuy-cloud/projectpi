@@ -28,9 +28,10 @@ class Controller {
             if (this.model.data_keranjang.length > 0) {this.view.form_pembayaran.classList.remove("hidden")}
             else {
                 // kalo form pembayaran show add hidden 
-                if (!this.view.form_pembayaran.contains("hidden")) this.view.form_pembayaran.classList.add("hidden")
+                if (!this.view.form_pembayaran.classList.contains("hidden")) this.view.form_pembayaran.classList.add("hidden")
             }
         }
+        this.view.handleTambahKeranjang({show: false})
     }
 
     async initial() {
@@ -213,18 +214,23 @@ class View {
 
     // kalo list barang ke klik jalanin fungsi ini
     handleOnClickMenuList(el, data_barang_id) {
-
         let {barang_setSelected} = this.hook ?? {}
 
         let {is_contain, is_empty} = barang_setSelected?.(data_barang_id),
-            is_classExist = el.classList.contains("selected"),
-            is_container_btn_hidden = !this.container_btn?.classList.contains("hidden")
+            is_classExist = el.classList.contains("selected")
 
         // kalo kelas `selected engga ada ama kalo id ini terdapat di barang_arr di model 
         !is_classExist && is_contain ? el.classList.add("selected") : el.classList.remove("selected")
+        this.handleTambahKeranjang({show: !is_empty})
+    }
+
+    handleTambahKeranjang({show}) {
+        let is_container_btn_hidden = !this.container_btn?.classList.contains("hidden")
 
         // kalo barang_arr kosong ama kalo container_btn terdapat di view
-        is_empty ? (is_container_btn_hidden && this.cotainer_btn?.classList.add("hidden")) : this.cotainer_btn?.classList.remove("hidden")
+        is_container_btn_hidden && !show ?
+            this.cotainer_btn?.classList.add("hidden")
+            : this.cotainer_btn?.classList.remove("hidden")
     }
 
     handleOnChangeJumlah(barang) {
@@ -264,7 +270,7 @@ class View {
             , elStok = stok && !jumlah ? `<div class="fill tr left" style="min-width: 100px;">stok: ${stok}</div>` : ""
             , elHarga = harga ? `<h3 class="border" style="min-width: 130px;">${uang}</h3>` : ""
             , elKodeBarang = kodebarang && !jumlah ? `<div class="margin-lr tr">Kode: ${kodebarang}</div>` : ""
-            , elJumlah = jumlah ? `<input id="${id}" name="jumlah" type="number" value=${jumlah} class="margin-lr" style="max-width: 50px;"></input>` : ""
+            , elJumlah = jumlah ? `<input id="${id}" name="jumlah" type="number" value=${jumlah} class="margin-lr" style="max-width: 70px;"></input>` : ""
 
         el.innerHTML = `
                 <div class="auto container column baseline between">
@@ -286,19 +292,18 @@ class View {
         if (data_barang_id) {
             let elJumlahByName = el.querySelector("input[name='jumlah']")
             elJumlahByName?.addEventListener("change", ({target}) => {
-                if (target.value > stok) {
-                    this.handleModal({
-                        title: namabarang,
-                        body: `stok barang ${namabarang} hanya ${stok}`
-                    }, () => {
-                        this.handleOnChangeJumlah({data_barang_id, jumlah: stok})
-                        elJumlahByName.value = stok
-                    })
-                } else {
-                    this.handleOnChangeJumlah({data_barang_id, jumlah: target.value})
-                }
+                this.handleOnChangeJumlah({data_barang_id, jumlah: target.value})
 
             })
+            if (elJumlahByName.value > stok) {
+                this.handleModal({
+                    title: namabarang,
+                    body: `stok barang ${namabarang} hanya ${stok}`
+                }, () => {
+                    this.handleOnChangeJumlah({data_barang_id, jumlah: stok})
+                    elJumlahByName.value = stok
+                })
+            }
         }
 
         return el
@@ -420,7 +425,6 @@ class Model {
         } else {
             this.barang_arr.push(id)
         }
-
         return {is_contain: this.barang_getSelected(id), is_empty: this.barang_isEmpty()}
     }
 
