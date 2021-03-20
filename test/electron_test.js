@@ -107,7 +107,7 @@ describe("Electron", function () {
         })
 
         it("keranjang_rm", async () => {
-            let {status} = await api.keranjang_rm(listByTransaksiID[0].data_barang_id)
+            let {status} = await api.keranjang_rm(transaksiID, listByTransaksiID[0].data_barang_id)
             assert.strictEqual(status, true)
 
             let list = await api.keranjang_get(transaksiID)

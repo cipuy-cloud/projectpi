@@ -7,7 +7,7 @@ const api = (ipc) => {
         keranjang_bayar: (transaksi_id) => ipc.invoke(vars.KERANJANG_BAYAR, transaksi_id),
         keranjang_tambah: (barang) => ipc.invoke(vars.KERANJANG_TAMBAH, barang),
         keranjang_get: (transaksi_id) => ipc.invoke(vars.KERANJANG_GET, transaksi_id),
-        keranjang_rm: (data_barang_id) => ipc.invoke(vars.KERANJANG_HAPUS, data_barang_id),
+        keranjang_rm: (transaksi_id, data_barang_id) => ipc.invoke(vars.KERANJANG_HAPUS, transaksi_id, data_barang_id),
 
         barang_tambah: (barang) => ipc.invoke(vars.BARANG_TAMBAH, barang),
         barang_get: () => ipc.invoke(vars.BARANG_GET),

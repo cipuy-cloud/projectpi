@@ -77,8 +77,8 @@ class Channel {
         })
 
 
-        ipcMain.handle(vars.KERANJANG_HAPUS, (_event, data_barang_id) => {
-            return this.keranjang.rmByBarangID(data_barang_id)
+        ipcMain.handle(vars.KERANJANG_HAPUS, (_event, transaksi_id, data_barang_id) => {
+            return this.keranjang.rmByBarangID(transaksi_id, data_barang_id)
         })
 
         ipcMain.handle(vars.TRANSAKSI_LAST_ID, (_event) => {
@@ -270,8 +270,8 @@ class Keranjang extends Table {
         return this.dao?.run(`DELETE from ${this.name} WHERE transaksi_id=${transaksi_id}`)
     }
 
-    rmByBarangID(data_barang_id) {
-        return this.dao?.run(`DELETE from ${this.name} WHERE data_barang_id=${data_barang_id}`)
+    rmByBarangID(transaksi_id, data_barang_id) {
+        return this.dao?.run(`DELETE from ${this.name} WHERE data_barang_id=${data_barang_id} AND transaksi_id=${transaksi_id}`)
     }
 
     transaksiID(id) {

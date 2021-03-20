@@ -31,6 +31,7 @@ class Controller {
                 if (!this.view.form_pembayaran.classList.contains("hidden")) this.view.form_pembayaran.classList.add("hidden")
             }
         }
+
         this.view.handleTambahKeranjang({show: false})
     }
 
@@ -138,7 +139,14 @@ class Controller {
         return {
             barang_getSelected: (id) => this.model.barang_getSelected(id),
             barang_setSelected: (id) => this.model.barang_setSelected(id),
-            keranjang_tambah: (barang) => this.model.keranjang_tambah(barang)
+            keranjang_tambah: async (barang) => {
+                await this.model.keranjang_tambah(barang)
+                await this.model.keranjang()
+            },
+            keranjang_rm: async (data_barang_id) => {
+                await this.model.keranjang_rm(data_barang_id)
+                await this.model.keranjang()
+            }
         }
     }
 }
@@ -155,8 +163,14 @@ class View {
         // element ini hanya terdapat di main Window
         this.form_pembayaran = document.getElementById("bayar")
         this.keranjang_barang = document.getElementById("keranjang_barang")
+
         // modal
         this.modal = document.getElementById("modal")
+        this.elTitle = document.getElementById("modal-title")
+        this.elMsg = document.getElementById("modal-msg")
+        this.elOk = document.getElementById("modal-ok")
+        this.elOkMsg = document.getElementById("modal-okMsg")
+        this.elCancel = document.getElementById("modal-cancel")
 
         // element ini hanya terdapat di databarang
         this.form_input_barang = document.getElementById("form_input_barang")
@@ -173,38 +187,34 @@ class View {
 
     // nampilin modal
     handleModal({title, body, okMsg}, eventOk, eventCancel) {
-        // modal element
-        let elTitle = this.modal.querySelector("#title")
-        let elMsg = this.modal.querySelector("#msg")
-        let elOk = this.modal.querySelector("#ok")
-        let elOkMsg = this.modal.querySelector("#okMsg")
-        let elCancel = this.modal.querySelector("#cancel")
 
         // judul
-        elTitle.innerHTML = title
+        this.elTitle.innerHTML = title
         // pesan
-        elMsg.innerHTML = body
+        this.elMsg.innerHTML = body
 
         // jika button ok
         if (eventOk) {
-            if (okMsg) elOkMsg.innerHTML = okMsg
-            elOk.classList.remove("hidden")
-            elOk.addEventListener("click", () => {
+            this.elOkMsg.innerHTML = okMsg ?? "Ok"
+            this.elOk.classList.remove("hidden")
+            this.elOk.addEventListener("click", (ev) => {
+                ev.preventDefault()
                 eventOk()
                 this.modal.classList.add("hidden")
-                elOk.classList.add("hidden")
-            })
+                this.elOk.classList.add("hidden")
+            }, false)
 
         }
 
         // jika button cancel
         if (eventCancel) {
-            elCancel.classList.remove("hidden")
-            elCancel.addEventListener("click", () => {
-                eventOk()
+            this.elCancel.classList.remove("hidden")
+            this.elCancel.addEventListener("click", (ev) => {
+                ev.preventDefault()
+                eventCancel()
                 this.modal.classList.add("hidden")
-                elCancel.classList.add("hidden")
-            })
+                this.elCancel.classList.add("hidden")
+            }, false)
 
         }
 
@@ -234,38 +244,28 @@ class View {
     }
 
     handleOnChangeJumlah(el, {namabarang, stok, data_barang_id}) {
-        let {keranjang_tambah} = this.hook ?? {}
-        // kalo jumlah barang lebih dari stok set julah ke stok 
-        if (el?.value > stok) {
-            this.handleModal({
-                title: namabarang,
-                body: `stok barang ${namabarang} hanya ${stok}`
-            }, () => {
-                keranjang_tambah?.({data_barang_id, jumlah: stok})
-                el.value = stok
-            })
+        let {keranjang_tambah, keranjang_rm} = this.hook ?? {}
+        let rmBarang = () => {
+            keranjang_rm?.(data_barang_id)
+        }
+        let setToDefualt = () => {
+            keranjang_tambah?.({data_barang_id, jumlah: 1})
+            el.value = 1
+        }
+        let setToStok = () => {
+            keranjang_tambah?.({data_barang_id, jumlah: stok})
+            el.value = stok
         }
         // kalo jumlah barang kurang dari 0 atau 0, hapus atau set ke 1
-        if (el?.value == 0 || el?.value < 0) {
-            this.handleModal(
-                {
-                    title: namabarang,
-                    body: `hapus barang ${namabarang} dari keranjang`,
-                    okMsg: "Hapus"
-                },
-                () => {
-                    keranjang_tambah?.({data_barang_id, jumlah: 1})
-                    el.value = 1
-                },
-                () => {
-                    keranjang_tambah?.({data_barang_id, jumlah: 1})
-                    el.value = 1
-
-                }
-            )
-
+        if (el.value < 0 || el.value === 0) {
+            this.handleModal({title: namabarang, body: `hapus barang ${namabarang} dari keranjang`, okMsg: "Hapus"}, rmBarang, setToDefualt)
+            return
         }
-
+        // kalo jumlah barang lebih dari stok set julah ke stok 
+        if (el.value > 0 && el.value > stok) {
+            this.handleModal({title: namabarang, body: `stok barang ${namabarang} hanya ${stok}`}, setToStok)
+            return
+        }
     }
 
     create_li({barang = {}, emptyMsg}) {
@@ -295,6 +295,7 @@ class View {
         // ubah nomor ke format uang rupiah
         let uang = new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR"}).format(harga)
 
+
         // element list 
         let elNama = `<h1 class="left">${namabarang ?? emptyMsg}</h1>`
             , elStok = stok && !jumlah ? `<div class="fill tr left" style="min-width: 100px;">stok: ${stok}</div>` : ""
@@ -323,8 +324,10 @@ class View {
             let elJumlahByName = el.querySelector("input[name='jumlah']")
             // handle perubahan jumlah
             this.handleOnChangeJumlah(elJumlahByName, barang)
-            elJumlahByName?.addEventListener("change", ({target}) => {
-                this.handleOnChangeJumlah(target, barang)
+
+            elJumlahByName?.addEventListener("change", (ev) => {
+                ev.preventDefault()
+                this.handleOnChangeJumlah(elJumlahByName, barang)
             })
         }
 
@@ -402,6 +405,10 @@ class Model {
         return get.result
     }
 
+    async keranjang_rm(data_barang_id) {
+        let transaksi_id = (await this.trasaksi)?.id
+        window.kasir.keranjang_rm(transaksi_id, data_barang_id)
+    }
 
     async keranjang_tambah(barang) {
         let transaksi_id = (await this.trasaksi)?.id
