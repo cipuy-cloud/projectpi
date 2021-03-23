@@ -1,481 +1,60 @@
-
-class Controller {
-    constructor(view, model) {
-        this.view = view;
-        this.model = model;
-    }
+import {TransaksiModel, TransaksiView, TransaksiController} from "./traansaksi"
+import {BarangModel, BarangView, BarangController} from "./barang"
+import {KeranjangModel, KeranjangView, KeranjangController} from "./keranjang"
 
 
-    // fungsi utama dari controller buat siapin mula mula
-    async run() {
-        await this.initial()
-    }
 
 
-    // fungsi untuk ambil list barang dari 
-    // database > context isolation  > render barang
-    async reload() {
-        await this.model.barang()
-        await this.model.keranjang()
+class App {
+    run() {
+        let form_cari_barang = document.getElementById("cari_barang")
 
-        this.view.render_barang(this.model.data_barang)
+        form_cari_barang.addEventListener("submit", ev => ev.preventDefault())
 
-        if (this.view.keranjang_barang && this.view.form_pembayaran) {
 
-            this.view.render_keranjang(this.model.data_keranjang)
-
-            // kalo data_keranjang engga kosong, tampilin 
-            if (this.model.data_keranjang.length > 0) {this.view.form_pembayaran.classList.remove("hidden")}
-            else {
-                // kalo form pembayaran show add hidden 
-                if (!this.view.form_pembayaran.classList.contains("hidden")) this.view.form_pembayaran.classList.add("hidden")
-            }
-        }
-
-        this.view.handleTambahKeranjang({show: false})
-    }
-
-    async initial() {
-        await this.reload()
-
-        // untuk main window menu list ke reload jika databarang terjadi input edit hapus barang
-        // jalanin fungsi ini
-        window.kasir.listen(() => {
-            this.reload()
+        let transaksi_model = new TransaksiModel()
+        let transaksi_view = new TransaksiView({
+            "cancel": document.getElementById("cancel"),
+            "bayar": document.getElementById("bayar")
         })
 
+        let transaksi_controller = new TransaksiController(transaksi_model, transaksi_view)
 
-        this.view.form_pembayaran?.addEventListener("submit", ev => {
-            ev.preventDefault()
+
+        let barang_model = new BarangModel()
+
+        let barang_view = new BarangView(barang_model, {
+            "cari": form_cari_barang.elements[0],
+            "list": document.getElementById("list_barang"),
+            "container": document.getElementById("container_btn"),
+            "tambah": document.getElementById("tambah"),
+            "hapus": document.getElementById("hapus"),
+            "form": document.getElementById("form_input_barang")
         })
 
+        new BarangController(barang_model, barang_view)
 
-        // kalo Cari Barang tersubmit biar kaga ke reload pagenya
-        this.view.cari_barang?.addEventListener("submit", ev => {
-            ev.preventDefault()
+        barang_view.show()
+
+
+        let keranjang_model = new KeranjangModel()
+
+        let keranjang_view = new KeranjangView(keranjang_model, {
+            "form": document.getElementById("form_input_barang"),
+            "list": document.getElementById("keranjang_barang")
         })
 
-        // kalo input barang selesai dan terklik tambah jalanin fungsi ini
-        this.view.form_input_barang?.addEventListener("submit", async (ev) => {
-            ev.preventDefault()
+        let keranjang_controller = new KeranjangController(keranjang_model, keranjang_view)
 
-            let kodebarang = parseInt(this.view.form_cari?.value)
-                , harga = parseInt(ev.target.elements["harga"].value)
-                , namabarang = ev.target.elements["namabarang"].value
-                , stok = parseInt(ev.target.elements["stok"].value)
+        keranjang_view.show()
 
-            // input barang ke api
-            window.kasir.barang_tambah({kodebarang, namabarang, harga, stok})
-            // reload list barang
-            await this.model.barang()
 
-            // jika barang terinput tampilkan hanya barang yang terinput
-            this.find_barang(kodebarang)
-
-            // kosongin form input 
-            this.view.form_input_barang.reset()
+        transaksi_controller.listen((id) => {
+            keranjang_controller.updateTrasaksiId(id)
         })
-
-
-        // kalo input form Cari Barang terketik jalanin fungsi ini
-        this.view.form_cari?.addEventListener("keyup", ({target}) => {
-            this.find_barang(target.value)
-        })
-
-        // ngeset fungsi callback dari Model ke View untuk fungsi click menu barang
-        this.view.setHook(this.brigeEvent())
-
-        // fungsi klik hapus untuk menghapus yang di tandai
-        this.view.btn_hapus?.addEventListener("click", async () => {
-            // remove semua yang di tandai
-            this.model.barang_removeSelected()
-
-            //  reload list barang data barang
-            this.reload()
-        })
-
-        this.view.btn_tambah?.addEventListener("click", () => {
-            this.model.keranjang_tambah()
-
-            //  reload keranjang
-            this.reload()
-        })
-
     }
 
-
-    // fungsi buat handle cari barang
-    find_barang(value) {
-
-        // check classname kalo terdapat hidden
-        const is_hidden = () => !this.view.form_input_barang?.classList.contains("hidden") && this.view.form_input_barang?.classList.toggle("hidden")
-
-        if (value) {
-            // cari barang dari list barang sesuai id yang di input dari Cari Barang
-            let barang = this.model.data_barang?.find((t) => t.kodebarang === parseInt(value))
-
-            if (barang) {
-                is_hidden()
-
-                // kalo barang ada render hanya satu yang sesuai 
-                this.view.render_barang([barang])
-            } else {
-                // hapus classname hidden
-                this.view.form_input_barang?.classList.remove("hidden")
-
-                // kalo barang yang di cari engga ada render kosong
-                this.view.render_barang()
-            }
-        } else {
-            is_hidden()
-
-            // kalo input terhapus sampai habis render semua barang
-            this.view.render_barang(this.model.data_barang)
-        }
-    }
-
-    // fungsi jembatan fungsi callback dari Model ke View 
-    brigeEvent() {
-        return {
-            barang_getSelected: (id) => this.model.barang_getSelected(id),
-            barang_setSelected: (id) => this.model.barang_setSelected(id),
-            keranjang_tambah: async (barang) => {
-                await this.model.keranjang_tambah(barang)
-                await this.model.keranjang()
-            },
-            keranjang_rm: async (data_barang_id) => {
-                await this.model.keranjang_rm(data_barang_id)
-                await this.model.keranjang()
-            }
-        }
-    }
-}
-
-class View {
-
-    constructor() {
-        // element
-        this.cari_barang = document.getElementById("cari_barang")
-        this.form_cari = this.cari_barang.elements[0]
-        this.list_barang = document.getElementById("list_barang")
-
-
-        // element ini hanya terdapat di main Window
-        this.form_pembayaran = document.getElementById("bayar")
-        this.keranjang_barang = document.getElementById("keranjang_barang")
-
-        // modal
-        this.modal = document.getElementById("modal")
-        this.elTitle = document.getElementById("modal-title")
-        this.elMsg = document.getElementById("modal-msg")
-        this.elOk = document.getElementById("modal-ok")
-        this.elOkMsg = document.getElementById("modal-okMsg")
-        this.elCancel = document.getElementById("modal-cancel")
-
-        // element ini hanya terdapat di databarang
-        this.form_input_barang = document.getElementById("form_input_barang")
-        this.cotainer_btn = document.getElementById("container_btn")
-        this.btn_hapus = this.cotainer_btn?.children.namedItem("hapus")
-        this.btn_tambah = this.cotainer_btn?.children.namedItem("tambah")
-    }
-
-    // ngeset fungsi callback dari Model ke View melalui Controller untuk fungsi click menu barang
-    setHook(hook) {
-        this.hook = hook
-    }
-
-
-    // nampilin modal
-    handleModal({title, body, okMsg}, eventOk, eventCancel) {
-
-        // judul
-        this.elTitle.innerHTML = title
-        // pesan
-        this.elMsg.innerHTML = body
-
-        // jika button ok
-        if (eventOk) {
-            this.elOkMsg.innerHTML = okMsg ?? "Ok"
-            this.elOk.classList.remove("hidden")
-            this.elOk.addEventListener("click", (ev) => {
-                ev.preventDefault()
-                eventOk()
-                this.modal.classList.add("hidden")
-                this.elOk.classList.add("hidden")
-            }, false)
-
-        }
-
-        // jika button cancel
-        if (eventCancel) {
-            this.elCancel.classList.remove("hidden")
-            this.elCancel.addEventListener("click", (ev) => {
-                ev.preventDefault()
-                eventCancel()
-                this.modal.classList.add("hidden")
-                this.elCancel.classList.add("hidden")
-            }, false)
-
-        }
-
-        // show modal
-        this.modal.classList.remove("hidden")
-    }
-
-    // kalo list barang ke klik jalanin fungsi ini
-    handleOnClickMenuList(el, data_barang_id) {
-        let {barang_setSelected} = this.hook ?? {}
-
-        let {is_contain, is_empty} = barang_setSelected?.(data_barang_id),
-            is_classExist = el.classList.contains("selected")
-
-        // kalo kelas `selected engga ada ama kalo id ini terdapat di barang_arr di model 
-        !is_classExist && is_contain ? el.classList.add("selected") : el.classList.remove("selected")
-        this.handleTambahKeranjang({show: !is_empty})
-    }
-
-    handleTambahKeranjang({show}) {
-        let is_container_btn_hidden = !this.container_btn?.classList.contains("hidden")
-
-        // kalo barang_arr kosong ama kalo container_btn terdapat di view
-        is_container_btn_hidden && !show ?
-            this.cotainer_btn?.classList.add("hidden")
-            : this.cotainer_btn?.classList.remove("hidden")
-    }
-
-    handleOnChangeJumlah(el, {namabarang, stok, data_barang_id}) {
-        let {keranjang_tambah, keranjang_rm} = this.hook ?? {}
-        let rmBarang = () => {
-            keranjang_rm?.(data_barang_id)
-        }
-        let setToDefualt = () => {
-            keranjang_tambah?.({data_barang_id, jumlah: 1})
-            el.value = 1
-        }
-        let setToStok = () => {
-            keranjang_tambah?.({data_barang_id, jumlah: stok})
-            el.value = stok
-        }
-        // kalo jumlah barang kurang dari 0 atau 0, hapus atau set ke 1
-        if (el.value < 0 || el.value === 0) {
-            this.handleModal({title: namabarang, body: `hapus barang ${namabarang} dari keranjang`, okMsg: "Hapus"}, rmBarang, setToDefualt)
-            return
-        }
-        // kalo jumlah barang lebih dari stok set julah ke stok 
-        if (el.value > 0 && el.value > stok) {
-            this.handleModal({title: namabarang, body: `stok barang ${namabarang} hanya ${stok}`}, setToStok)
-            return
-        }
-    }
-
-    create_li({barang = {}, emptyMsg}) {
-        let {id, stok, namabarang, kodebarang, harga, jumlah, data_barang_id} = barang
-
-        let {barang_getSelected} = this.hook ?? {}
-
-        let el = document.createElement("li")
-
-        // check apakah data_barang_id tertandai
-        let is_selected = barang_getSelected?.(id)
-
-        // kalo tertandai tambahkan selected di className
-        el.className = `container row between center padding-md ${is_selected ? "selected" : ""}`.trim()
-
-        if (id) {
-            // kalo terdapat objek id di barang set idnya per element list
-            el.id = id
-
-            // jika objek jumlah engga ada
-            // nambahin fungsi click per element list
-            if (!jumlah) {
-                el.addEventListener("click", () => this.handleOnClickMenuList(el, id))
-            }
-        }
-
-        // ubah nomor ke format uang rupiah
-        let uang = new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR"}).format(harga)
-
-
-        // element list 
-        let elNama = `<h1 class="left">${namabarang ?? emptyMsg}</h1>`
-            , elStok = stok && !jumlah ? `<div class="fill tr left" style="min-width: 100px;">stok: ${stok}</div>` : ""
-            , elHarga = harga ? `<h3 class="border" style="min-width: 130px;">${uang}</h3>` : ""
-            , elKodeBarang = kodebarang && !jumlah ? `<div class="margin-lr tr">Kode: ${kodebarang}</div>` : ""
-            , elJumlah = jumlah ? `<input id="${id}" name="jumlah" type="number" value=${jumlah} class="margin-lr" style="max-width: 70px;"></input>` : ""
-
-        el.innerHTML = `
-                <div class="auto container column baseline between">
-                    <div class="item container row center margin-tb"> 
-                        ${elNama}
-                        ${elKodeBarang}
-                    </div>
-                    <div class="item container row baseline">
-                        ${elStok}
-                    </div>
-                </div>
-                <div class="inlineFlex middle">
-                     ${elJumlah}
-                     ${jumlah ? "<span class='tr center'>&times;</span>" : ""}
-                     ${elHarga}  
-                </div>
-                `.trim()
-
-        if (data_barang_id) {
-            let elJumlahByName = el.querySelector("input[name='jumlah']")
-            // handle perubahan jumlah
-            this.handleOnChangeJumlah(elJumlahByName, barang)
-
-            elJumlahByName?.addEventListener("change", (ev) => {
-                ev.preventDefault()
-                this.handleOnChangeJumlah(elJumlahByName, barang)
-            })
-        }
-
-        return el
-    }
-
-
-    render_keranjang(data_keranjang = []) {
-        // buat keranjang kosong
-        this.keranjang_barang.innerHTML = ""
-
-        // check barang di keranjang kosong apa engga
-        let is_empty = data_keranjang?.length == 0
-
-        // kalo barang kosong render hanya satu barang kosong kalo engga render barang 
-        is_empty
-            ? this.keranjang_barang.append(this.create_li({emptyMsg: "Keranjang Kosong"})) :
-            data_keranjang.forEach(barang => this.keranjang_barang.append(this.create_li({barang})))
-    }
-
-    // render list barang
-    render_barang(data_barang = []) {
-
-        // membuat element list barang kosong
-        this.list_barang.innerHTML = ""
-
-        let is_empty = data_barang?.length == 0
-
-        // kalo barang kosong render hanya satu barang kosong kalo engga render barang 
-        is_empty ?
-            this.list_barang.append(this.create_li({emptyMsg: "Barang tidak ditemukan"}))
-            : data_barang.forEach(barang => this.list_barang.append(this.create_li({barang})))
-
-    }
 }
 
 
-class Model {
-    constructor() {
-        // dapetin transaksi
-        this.trasaksi = this.trasaksi_init()
-
-        // kumpulan barang dari api
-        this.data_barang = []
-
-        // kumpulan barang yang di tandai
-        this.barang_arr = []
-
-        // kumpulan barang yang ada di keranjang dari api
-        this.data_keranjang = []
-
-        // fungsi untuk mengitial barang
-        this.barang()
-
-        // fungsi untuk mengitial keranjang
-        this.keranjang()
-    }
-
-    async trasaksi_init() {
-        // ngambil transaksi terkahir 
-        let {result} = await window.kasir.transaksi_last_id()
-
-        // fungsi kalo transaksi id engga ada buat baru
-        let init = async (id) => await window.kasir.transaksi_get(id ?? await window.kasir.transaksi_tambah().lastID)
-
-        // check transaksi terkahir ada atau engga
-        let get = await init(result.lastID)
-
-        // check transaksi cancel apa engga
-        let is_cancel = get.result.cancel === 1
-
-        // kalo cancel buat baru
-        if (is_cancel) get = await init()
-
-        return get.result
-    }
-
-    async keranjang_rm(data_barang_id) {
-        let transaksi_id = (await this.trasaksi)?.id
-        window.kasir.keranjang_rm(transaksi_id, data_barang_id)
-    }
-
-    async keranjang_tambah(barang) {
-        let transaksi_id = (await this.trasaksi)?.id
-        if (transaksi_id) {
-            if (barang) {
-                let {data_barang_id, jumlah} = barang
-                window.kasir.keranjang_tambah({transaksi_id, data_barang_id, jumlah})
-            } else {
-                if (!this.barang_isEmpty()) {
-                    for (let data_barang_id of this.barang_arr) {
-                        window.kasir.keranjang_tambah({transaksi_id, data_barang_id, jumlah: null})
-                    }
-                }
-
-            }
-            await this.keranjang()
-        }
-    }
-
-    // fungsi hapus semua yang di tandai
-    // kalo status true return ok 
-    async barang_removeSelected() {
-        for (let data_barang_id of this.barang_arr) {
-            window.kasir.barang_rm(data_barang_id)
-        }
-    }
-
-    // untuk check data_barang_id terdapat di list barang yang di tandai
-    barang_getSelected(id) {
-        return this.barang_arr.includes(id)
-    }
-
-    // untuk check barang yang di tandai kosong apa engga
-    barang_isEmpty() {
-        return this.barang_arr.length === 0
-    }
-
-    // Check kalo barang_arr kosong push dengan id 
-    // kalo engga hapus barang sesuai id
-    // return data apakah barang terdapat di barang_arr ama barang_arr kosong apa engga
-    barang_setSelected(id) {
-        if (!this.barang_isEmpty() && this.barang_getSelected(id)) {
-            this.barang_arr = this.barang_arr.filter((v) => v !== id)
-        } else {
-            this.barang_arr.push(id)
-        }
-        return {is_contain: this.barang_getSelected(id), is_empty: this.barang_isEmpty()}
-    }
-
-    // hook ambil data dari context isolation ngambil keranjang 
-    async keranjang() {
-        let trasaksi_id = (await this.trasaksi)?.id
-        let {status, result} = await window.kasir.keranjang_get(trasaksi_id)
-        if (status) {
-            this.data_keranjang = result
-        }
-    }
-
-    // hook ambil data dari context isolation ngambil list barang 
-    async barang() {
-        let {status, result} = await window.kasir.barang_get()
-        this.data_barang = status && result.length > 0 ? result : []
-        if (!this.barang_isEmpty()) {
-            this.barang_arr = []
-        }
-    }
-}
-
-
-export {Controller, Model, View}
+export default App

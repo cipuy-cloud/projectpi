@@ -101,6 +101,10 @@ class Channel {
             return this.handleCancel(transaksi_id)
         })
 
+        ipcMain.handle(vars.TRANSAKSI_BAYAR, (_event, transaksi_id) => {
+            return this.transaksi.update(transaksi_id)
+        })
+
         ipcMain.handle(vars.TUTUP, (_event, _arg) => {
             this.close()
             app.quit()

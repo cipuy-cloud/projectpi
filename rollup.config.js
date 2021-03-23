@@ -13,6 +13,8 @@ import autoprefixer from "autoprefixer"
 
 import url from "@rollup/plugin-url"
 
+import nodePolyfills from "rollup-plugin-node-polyfills"
+
 
 // check mode dalam pembuatan atau udah jadi
 const production = !process.env.ROLLUP_WATCH;
@@ -25,6 +27,7 @@ export default {
         sourcemap: true
     },
     plugins: [
+        nodePolyfills(),
         url(),
         postcss({
             plugins: [autoprefixer()]
