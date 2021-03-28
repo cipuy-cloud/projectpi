@@ -1,5 +1,5 @@
 const electron = require("electron")
-const {app, BrowserWindow, Menu, globalShortcut, dialog} = electron
+const {app, BrowserWindow, Menu, globalShortcut} = electron
 const args = process.argv.slice(1)
 const serve = args.some(val => val === "--dev")
 const Channel = require("./channel")

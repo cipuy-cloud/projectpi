@@ -38,14 +38,14 @@
                 <div class="no-flex full-width padding-md">
                     <form id="bayar" class="hidden container column between baseline">
                         <div class="item center full-width">
-                            <input class="full-width" type="text" placeholder="Total Pembayaran" />
+                            <input class="full-width" type="text" placeholder="Total Pembayaran" name="total" />
                         </div>
                         <div class="container row between full-width margin-tb">
                             <h1 class="item left">Total</h1>
-                            <h3 class="item right">Rp 120.000</h3>
+                            <h3 class="item right" id="total"></h3>
                         </div>
                         <button type="submit" class="item btn green full-width radius">Bayar</button>
-                        <button type="cancel" class="item btn red full-width radius">Cancel</button>
+                        <button id="cancel" type="button" class="item btn red full-width radius">Cancel</button>
                     </form>
                 </div>
             </div>

@@ -4,12 +4,15 @@ import EventEmitter from "events"
 class TransaksiModel extends EventEmitter {
     constructor() {
         super()
-        this._data = this.init()
+        this._data = this.init().then(data => {
+            this.emit("transaksi_update")
+            return data
+        })
     }
 
 
-    id() {
-        return this._data.id
+    async id() {
+        return (await this._data).id
     }
 
     async init() {
@@ -32,7 +35,7 @@ class TransaksiModel extends EventEmitter {
     }
 
     async cancel() {
-        let {status} = await window.kasir.transaksi_cancel(this.id())
+        let {status} = await window.kasir.transaksi_cancel(await this.id())
 
         if (status) {
             await this.init()
@@ -42,7 +45,7 @@ class TransaksiModel extends EventEmitter {
     }
 
     async update() {
-        let {status} = await window.kasir.transaksi_bayar(this.id())
+        let {status} = await window.kasir.transaksi_bayar(await this.id())
 
         if (status) {
             await this.init()
@@ -76,8 +79,8 @@ class TransaksiController {
     }
 
     listen(cb) {
-        this._model.on("transaksi_update", () => {
-            cb(this._model.id())
+        this._model.on("transaksi_update", async () => {
+            cb(await this._model.id())
         })
     }
 }

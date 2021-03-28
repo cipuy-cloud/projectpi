@@ -7,19 +7,20 @@ class KeranjangModel extends EventEmitter {
         this._items = []
     }
 
-    async get(transaksi_id) {
-        let {status, result} = await window.kasir.keranjang_get(transaksi_id)
+    get items() {
+        return this._items
+    }
 
+    async setItems(transaksi_id) {
+        let {status, result} = await window.kasir.keranjang_get(transaksi_id)
         this._items = status && result.length > 0 ? result : []
     }
+
 
     is_empty() {
         return this._items.length === 0
     }
 
-    getItems() {
-        return this._items
-    }
 
     async remove(transaksi_id, barang_id) {
 
@@ -28,15 +29,9 @@ class KeranjangModel extends EventEmitter {
         if (status) this.emit("keranjang_update")
     }
 
-    async add(transaksi_id, {data_barang_id, jumlah}) {
-        let status
-
-        if (jumlah) {
-            let t = await window.kasir.keranjang_tambah({transaksi_id, data_barang_id, jumlah})
-            status = t.status
-        }
-
-        if (status) this.emit("keranjang_update")
+    async add(transaksi_id, {data_barang_id, jumlah, stok}) {
+        let {status} = await window.kasir.keranjang_tambah({transaksi_id, data_barang_id, jumlah, stok})
+        return status
     }
 }
 
@@ -51,19 +46,26 @@ class KeranjangView extends EventEmitter {
 
     }
 
+
+    currency(nominal) {
+        return new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR"}).format(nominal)
+    }
+
     li({id, namabarang, harga, jumlah}) {
         let el = document.createElement("li")
 
         el.id = id
+
         el.className = "container row between center padding-md"
 
-        let uang = new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR"}).format(harga)
+        let uang = this.currency(harga)
 
         let elNama = `<h1 class="left">${namabarang}</h1>`
 
         let elHarga = harga ? `<h3 class="border" style="min-width: 130px;">${uang}</h3>` : ""
 
-        let elJumlah = jumlah ? `<input id="${id}" name="jumlah" type="number" value=${jumlah} class="margin-lr" style="max-width: 70px;"></input>` : ""
+        let elJumlah = jumlah ? `<input id="jumlah-${id}" name="jumlah" type="number" value=${jumlah} class="margin-lr" style="max-width: 70px;"></input>` : ""
+
 
         el.innerHTML = `
                 <div class="auto container column baseline between">
@@ -78,12 +80,26 @@ class KeranjangView extends EventEmitter {
                 </div>
                 `.trim()
 
+        let elJumlahByID = el.querySelector(`#jumlah-${id}`)
+
+        if (elJumlahByID) {
+            elJumlahByID.addEventListener("change", ev => {
+                ev.preventDefault()
+
+                jumlah = parseInt(ev.target.value)
+
+                this.emit("keranjang_jumlah", id, jumlah, el)
+            })
+        }
+
         return el
 
     }
 
     toggleForm(toggle) {
+
         let is_hidden = this._elements.form?.classList.contains("hidden")
+
         if (toggle) {
             is_hidden && this._elements.form?.classList.remove("hidden")
         } else {
@@ -95,8 +111,11 @@ class KeranjangView extends EventEmitter {
         this.render()
     }
 
+
     render() {
-        this._elements.innerHTML = ""
+        this._elements.list.innerHTML = ""
+
+        let total = 0
 
         if (this._model.is_empty()) {
             this._elements.list?.append(this.li({
@@ -106,11 +125,13 @@ class KeranjangView extends EventEmitter {
 
             this.toggleForm(false)
         } else {
-            this._model.getItems().forEach((kr) => {
+            for (let kr of this._model.items) {
                 this._elements.list.append(this.li(kr))
-            })
+                total += kr.harga * kr.jumlah
+            }
             this.toggleForm(true)
         }
+        this._elements.total.innerText = this.currency(total)
     }
 }
 
@@ -122,22 +143,49 @@ class KeranjangController {
         this._transaksi_id = null
 
         model.on("keranjang_update", () => this.updateList())
+
+        view.on("keranjang_jumlah", (id, jumlah, el) => this.change(id, jumlah, el))
+    }
+
+    async change(data_barang_id, jumlah, el) {
+        let status = await this._model.add(this._transaksi_id, {data_barang_id, jumlah})
+
+        if (status && this._transaksi_id) {
+            await this._model.setItems(this._transaksi_id)
+
+            let item = this._model.items.find((br) => br.id == data_barang_id)
+
+            if (item) {
+                if ((jumlah == 0 || jumlah < 0) || jumlah > item.stok) el.parentNode.replaceChild(this._view.li(item), el)
+            } else {
+                el.parentNode.removeChild(el)
+            }
+        }
+
     }
 
     async add(barang) {
         if (this._transaksi_id) {
-            this._model.add(this._transaksi_id, barang)
+            let status
+
+            for (let data_barang_id of barang) {
+                status = await this._model.add(this._transaksi_id, {data_barang_id, jumlah: null})
+            }
+
+            if (status) this.updateList()
         }
     }
 
     updateTrasaksiId(id) {
         this._transaksi_id = id
+
         this.updateList()
     }
 
     async updateList() {
         if (this._transaksi_id) {
-            await this._model.get(this._transaksi_id)
+            await this._model.setItems(this._transaksi_id)
+
             this._view.render()
         }
     }

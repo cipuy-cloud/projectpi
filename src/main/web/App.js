@@ -4,7 +4,6 @@ import {KeranjangModel, KeranjangView, KeranjangController} from "./keranjang"
 
 
 
-
 class App {
     run() {
         let form_cari_barang = document.getElementById("cari_barang")
@@ -29,29 +28,38 @@ class App {
             "container": document.getElementById("container_btn"),
             "tambah": document.getElementById("tambah"),
             "hapus": document.getElementById("hapus"),
+            "edit": document.getElementById("edit"),
             "form": document.getElementById("form_input_barang")
         })
 
-        new BarangController(barang_model, barang_view)
+        let barang_controller = new BarangController(barang_model, barang_view)
 
         barang_view.show()
 
+        let keranjang = document.getElementById("keranjang_barang")
 
-        let keranjang_model = new KeranjangModel()
+        if (keranjang) {
+            let keranjang_model = new KeranjangModel()
 
-        let keranjang_view = new KeranjangView(keranjang_model, {
-            "form": document.getElementById("form_input_barang"),
-            "list": document.getElementById("keranjang_barang")
-        })
+            let keranjang_view = new KeranjangView(keranjang_model, {
+                "form": document.getElementById("bayar"),
+                "list": keranjang,
+                "total": document.getElementById("total")
+            })
 
-        let keranjang_controller = new KeranjangController(keranjang_model, keranjang_view)
+            let keranjang_controller = new KeranjangController(keranjang_model, keranjang_view)
 
-        keranjang_view.show()
+            keranjang_view.show()
 
+            barang_controller.barang_to_keranjang((barang) => {
+                keranjang_controller.add(barang)
+            })
 
-        transaksi_controller.listen((id) => {
-            keranjang_controller.updateTrasaksiId(id)
-        })
+            transaksi_controller.listen((id) => {
+                keranjang_controller.updateTrasaksiId(id)
+            })
+        }
+
     }
 
 }

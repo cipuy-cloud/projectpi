@@ -9,6 +9,7 @@ const api = (ipc) => {
         keranjang_rm: (transaksi_id, data_barang_id) => ipc.invoke(vars.KERANJANG_HAPUS, transaksi_id, data_barang_id),
 
         barang_tambah: (barang) => ipc.invoke(vars.BARANG_TAMBAH, barang),
+        barang_update: (barang) => ipc.invoke(vars.BARANG_UPDATE, barang),
         barang_get: () => ipc.invoke(vars.BARANG_GET),
         barang_rm: (barang_id) => ipc.invoke(vars.BARANG_HAPUS, barang_id),
 
@@ -21,7 +22,7 @@ const api = (ipc) => {
 
 
         listen: (listener_callback) => {
-            ipc.on(vars.BARANG_UPDATE, () => {
+            ipc.on(vars.BARANG_REFRESH, () => {
                 listener_callback()
             })
         }

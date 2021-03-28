@@ -1,4 +1,4 @@
-const {ipcMain, app} = require("electron")
+const {ipcMain, ipcRenderer, app, dialog} = require("electron")
 const Database = require("better-sqlite3")
 const vars = require("./env")
 
@@ -35,11 +35,10 @@ class Channel {
     }
 
     listen(mainWindow) {
-
         ipcMain.handle(vars.BARANG_TAMBAH, async (_event, barang) => {
             let result = await this.barang.insert(barang)
             if (result.status) {
-                mainWindow.webContents.send(vars.BARANG_UPDATE)
+                mainWindow.webContents.send(vars.BARANG_REFRESH)
             }
             return result
         })
@@ -48,22 +47,53 @@ class Channel {
             return this.barang.all()
         })
 
+        ipcMain.handle(vars.BARANG_UPDATE, async (_event, barang) => {
+            let result = await this.barang.update(barang)
+            if (result.status) {
+                mainWindow.webContents.send(vars.BARANG_REFRESH)
+            }
+            return result
+        })
+
         ipcMain.handle(vars.BARANG_HAPUS, async (_event, barang_id) => {
             let result = await this.barang.rmByID(barang_id)
             if (result.status) {
-                mainWindow.webContents.send(vars.BARANG_UPDATE)
+                mainWindow.webContents.send(vars.BARANG_REFRESH)
             }
             return result
         })
 
         ipcMain.handle(vars.KERANJANG_TAMBAH, async (_event, {transaksi_id, data_barang_id, jumlah}) => {
-            // check barang ada atau tidak
             let {result} = await this.keranjang.barangID(data_barang_id)
 
+            if (jumlah === 0 | jumlah < 0) {
+                let msg = await dialog.showMessageBox(mainWindow, {
+                    buttons: ["OK", "Cancel"],
+                    message: `hapus ${result.namabarang} dari keranjang`
+                })
+
+                switch (msg.response) {
+                    case 0:
+                        return this.keranjang.rmByBarangID(transaksi_id, data_barang_id)
+                    case 1:
+                        jumlah = 1
+                        break
+                    default:
+                        break
+                }
+            }
+
+            if (jumlah && jumlah > result.stok) {
+
+                let _msg = await dialog.showMessageBox(mainWindow, {
+                    buttons: ["Ok"],
+                    message: `${result.namabarang} stok hanya ${result.stok}`
+                })
+
+                jumlah = result.stok
+            }
 
 
-            // kalo barang ada update dengan jumlah
-            // kalo engga ada insert keranjang baru
             return result ? this.keranjang.handleUpdateJumlah({data_barang_id, jumlah: jumlah ?? result.jumlah + 1})
                 : this.keranjang.insert({transaksi_id, data_barang_id, jumlah: 1})
         })
@@ -236,8 +266,12 @@ class Barang extends Table {
 
     }
 
+    update({kodebarang, namabarang, harga, stok}) {
+        return this.dao?.run(`UPDATE ${this.name} SET stok=${stok}, harga=${harga}, namabarang='${namabarang}' WHERE kodebarang=${kodebarang}`)
+    }
+
     handleUpdateStok(transaksi_id) {
-        return this.dao?.run(`UPDATE ${this.name} SET stok = stok - 1 WHERE id IN (SELECT data_barang_id FROM keranjang where transaksi_id= ${transaksi_id})`)
+        return this.dao?.run(`UPDATE ${this.name} SET stok = stok - 1 WHERE id IN (SELECT data_barang_id FROM keranjang WHERE transaksi_id= ${transaksi_id})`)
     }
 }
 

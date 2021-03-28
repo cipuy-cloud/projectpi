@@ -8,15 +8,22 @@ class BarangModel extends EventEmitter {
         this._selected = []
         this._find = {val: null, notFound: false}
 
+        window.kasir.listen(async () => {
+            await this.refresh()
+        })
     }
-
 
     async add(barang) {
         let {status} = await window.kasir.barang_tambah(barang)
-
         if (status) {
-            this.refresh()
-            this.emit("barang_update")
+            await this.refresh()
+        }
+    }
+
+    async update(barang) {
+        let {status} = await window.kasir.barang_update(barang)
+        if (status) {
+            await this.refresh()
         }
     }
 
@@ -26,14 +33,12 @@ class BarangModel extends EventEmitter {
                 await window.kasir.barang_rm(barang_id)
             }
             await this.refresh()
-            this._selected = []
-            this.emit("barang_update")
         }
-
     }
 
     async refresh() {
-        this.items = await this.init()
+        this._items = await this.init()
+        this.reset_select()
     }
 
     async init() {
@@ -45,11 +50,11 @@ class BarangModel extends EventEmitter {
 
     find(barang, notFound) {
         this._find = {val: barang, notFound}
-        this.emit("barang_update")
+        this.emit("barang_refresh")
     }
 
     async items() {
-        return this._items
+        return await this._items
     }
 
     async getItems() {
@@ -62,6 +67,7 @@ class BarangModel extends EventEmitter {
 
     async is_empty() {
         let items = await this.getItems()
+
         return items.length === 0
     }
 
@@ -75,6 +81,15 @@ class BarangModel extends EventEmitter {
     }
 
 
+    reset_select() {
+        this._selected = []
+        this.emit("reset_select")
+    }
+
+    selects() {
+        return this._selected
+    }
+
     select(id) {
         if (this.is_contain(id)) {
             this._selected = this._selected.filter((selectedIdx) => selectedIdx != id)
@@ -82,6 +97,8 @@ class BarangModel extends EventEmitter {
             this._selected.push(id)
         }
     }
+
+
 }
 
 
@@ -91,8 +108,11 @@ class BarangView extends EventEmitter {
         this._model = model
         this._elements = elements
 
-        model.on("barang_update", () => this.render())
-
+        model.on("barang_refresh", () => this.render())
+        model.on("reset_select", async () => {
+            this.toggleButtonTambahKeranjang(false)
+            this.render()
+        })
 
         elements.cari?.addEventListener("keyup", ({target}) => {
             this.emit("barang_cari", target.value)
@@ -115,14 +135,19 @@ class BarangView extends EventEmitter {
                 , namabarang = ev.target.elements["namabarang"].value
                 , stok = parseInt(ev.target.elements["stok"].value)
 
+            if (this._elements.cari.disabled) {
+                this.emit("barang_update", {kodebarang, namabarang, harga, stok})
+            } else {
+                this.emit("barang_input", {kodebarang, namabarang, harga, stok})
+            }
 
 
-            this.emit("barang_input", {kodebarang, namabarang, harga, stok})
-
-            this.toggleFormInputBarang(false)
             ev.target.reset()
+            this._elements.cari.value = ""
+            this._elements.cari.disabled = false
         })
     }
+
 
     handlehidden(el, toggle, className) {
         let is_hidden = el.classList.contains(className)
@@ -149,7 +174,31 @@ class BarangView extends EventEmitter {
         let el = document.createElement("li")
 
         el.id = id
-        el.className = "container row between center padding-md ".trim()
+        el.className = `container row between center padding-md  ${this._model.is_contain(id) ? "selected" : ""}`.trim()
+
+        if (this._elements.form) {
+            el.addEventListener("contextmenu", ev => {
+                if (ev.button === 2) {
+                    this.handlehidden(el, false, "hidden")
+
+                    let elKodebarang = this._elements.cari,
+                        elHarga = this._elements.form?.elements["harga"],
+                        elNamabarang = this._elements.form?.elements["namabarang"],
+                        elStok = this._elements.form?.elements["stok"]
+
+                    elKodebarang.value = kodebarang
+                    elHarga.value = harga
+                    elNamabarang.value = namabarang
+                    elStok.value = stok
+
+                    elKodebarang.disabled = true
+
+                    this.toggleFormInputBarang(true)
+                    this._elements.list.innerHTML = ""
+                }
+            })
+
+        }
 
         el.addEventListener("click", () => {
             this.emit("barang_select", id)
@@ -159,9 +208,11 @@ class BarangView extends EventEmitter {
 
         let uang = new Intl.NumberFormat("id-ID", {style: "currency", currency: "IDR"}).format(harga)
 
-        let elNama = `<h1 class="left">${namabarang}</h1>`
-            , elStok = stok ? `<div class="fill tr left" style="min-width: 100px;">stok: ${stok}</div>` : "", elHarga = harga ? `<h3 class="border" style="min-width: 130px;">${uang}</h3>` : ""
-            , elKodeBarang = kodebarang ? `<div class="margin-lr tr">Kode: ${kodebarang}</div>` : ""
+        let elNama = `<h1 class="left">${namabarang}</h1>`,
+            elStok = stok ? `<div class="fill tr left" style="min-width: 100px;">stok: ${stok}</div>` : "",
+            elHarga = harga ? `<h3 class="border" style="min-width: 130px;">${uang}</h3>` : "",
+            elKodeBarang = kodebarang ? `<div class="margin-lr tr">Kode: ${kodebarang}</div>` : ""
+
 
         el.innerHTML = `
                 <div class="auto container column baseline between">
@@ -177,6 +228,8 @@ class BarangView extends EventEmitter {
                      ${elHarga}  
                 </div>
                 `.trim()
+
+
         return el
 
     }
@@ -193,10 +246,13 @@ class BarangView extends EventEmitter {
             this._elements.list.append(this.li({id: 404, namabarang: "Barang Tidak Ditemukan"}))
 
             this.toggleFormInputBarang(true)
+
         } else {
             let items = await this._model.getItems()
 
-            items.forEach((br) => this._elements.list.append(this.li(br)))
+            for (let br of items) {
+                this._elements.list.append(this.li(br))
+            }
 
             this.toggleFormInputBarang(false)
         }
@@ -213,7 +269,14 @@ class BarangController {
         view.on("barang_input", barang => this.add(barang))
         view.on("barang_cari", value => this.find_barang(value))
         view.on("barang_hapus", () => this.remove())
+        view.on("barang_update", barang => this.update(barang))
+    }
 
+    barang_to_keranjang(send_to_keranjang) {
+        this._view.on("keranjang_add", () => {
+            send_to_keranjang(this._model.selects())
+            this._model.refresh()
+        })
     }
 
     async find_barang(value) {
@@ -222,8 +285,13 @@ class BarangController {
         this._model.find(barang, value && !barang)
     }
 
+    async update(barang) {
+        await this._model.update(barang)
+    }
+
     async add(barang) {
         await this._model.add(barang)
+        await this.find_barang(barang.kodebarang)
     }
 
     async remove() {
