@@ -32,6 +32,7 @@ class BarangModel extends EventEmitter {
             for (let barang_id of this._selected) {
                 await window.kasir.barang_rm(barang_id)
             }
+            this.find(null, false)
             await this.refresh()
         }
     }
