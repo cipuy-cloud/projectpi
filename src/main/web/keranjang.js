@@ -5,15 +5,24 @@ class KeranjangModel extends EventEmitter {
     constructor() {
         super()
         this._items = []
+        this.total = 0
     }
 
     get items() {
         return this._items
     }
 
+    setTotal() {
+        this.total = 0
+        for (let item of this._items) {
+            this.total += item.harga * item.jumlah
+        }
+    }
+
     async setItems(transaksi_id) {
         let {status, result} = await window.kasir.keranjang_get(transaksi_id)
         this._items = status && result.length > 0 ? result : []
+        this.setTotal()
     }
 
 
@@ -112,10 +121,12 @@ class KeranjangView extends EventEmitter {
     }
 
 
+    setTotal(total) {
+        this._elements.total.innerText = this.currency(total)
+    }
+
     render() {
         this._elements.list.innerHTML = ""
-
-        let total = 0
 
         if (this._model.is_empty()) {
             this._elements.list?.append(this.li({
@@ -127,11 +138,9 @@ class KeranjangView extends EventEmitter {
         } else {
             for (let kr of this._model.items) {
                 this._elements.list.append(this.li(kr))
-                total += kr.harga * kr.jumlah
             }
             this.toggleForm(true)
         }
-        this._elements.total.innerText = this.currency(total)
     }
 }
 
@@ -145,6 +154,10 @@ class KeranjangController {
         model.on("keranjang_update", () => this.updateList())
 
         view.on("keranjang_jumlah", (id, jumlah, el) => this.change(id, jumlah, el))
+    }
+
+    handleTotal() {
+        this._view.setTotal(this._model.total)
     }
 
     async change(data_barang_id, jumlah, el) {
@@ -161,7 +174,7 @@ class KeranjangController {
                 el.parentNode.removeChild(el)
             }
         }
-
+        this.handleTotal()
     }
 
     async add(barang) {
@@ -178,7 +191,6 @@ class KeranjangController {
 
     updateTrasaksiId(id) {
         this._transaksi_id = id
-
         this.updateList()
     }
 
@@ -188,6 +200,7 @@ class KeranjangController {
 
             this._view.render()
         }
+        this.handleTotal()
     }
 }
 
