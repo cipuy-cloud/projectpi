@@ -21,6 +21,9 @@ const api = (ipc) => {
         transaksi_bayar: (transaksi_id) => ipc.invoke(vars.TRANSAKSI_BAYAR, transaksi_id),
 
 
+
+        showPrintPage: () => ipc.invoke(vars.PRINT_BARANG),
+
         listen: (listener_callback) => {
             ipc.on(vars.BARANG_REFRESH, () => {
                 listener_callback()

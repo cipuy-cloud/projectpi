@@ -144,6 +144,10 @@ const setMainMenu = () => {
             ]
         },
     ]
+
     Menu.setApplicationMenu(Menu.buildFromTemplate(template))
 }
 
+module.exports = {
+    createWindowPrint: () => createWindowPrint()
+}

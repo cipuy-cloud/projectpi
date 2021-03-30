@@ -4,8 +4,13 @@ import EventEmitter from "events"
 class KeranjangModel extends EventEmitter {
     constructor() {
         super()
+        this.transaksi_id = null
         this._items = []
         this.total = 0
+    }
+
+    setTrasaksiId(id) {
+        this.transaksi_id = id
     }
 
     get items() {
@@ -19,10 +24,11 @@ class KeranjangModel extends EventEmitter {
         }
     }
 
-    async setItems(transaksi_id) {
-        let {status, result} = await window.kasir.keranjang_get(transaksi_id)
+    async setItems() {
+        let {status, result} = await window.kasir.keranjang_get(this.transaksi_id)
         this._items = status && result.length > 0 ? result : []
         this.setTotal()
+        this.emit("barang_items")
     }
 
 
@@ -31,17 +37,18 @@ class KeranjangModel extends EventEmitter {
     }
 
 
-    async remove(transaksi_id, barang_id) {
+    async remove(barang_id) {
 
-        let {status} = await window.kasir.keranjang_rm(transaksi_id, barang_id)
+        let {status} = await window.kasir.keranjang_rm(this.transaksi_id, barang_id)
 
         if (status) this.emit("keranjang_update")
     }
 
-    async add(transaksi_id, {data_barang_id, jumlah, stok}) {
-        let {status} = await window.kasir.keranjang_tambah({transaksi_id, data_barang_id, jumlah, stok})
+    async add({data_barang_id, jumlah, stok}) {
+        let {status} = await window.kasir.keranjang_tambah({transaksi_id: this.transaksi_id, data_barang_id, jumlah, stok})
         return status
     }
+
 }
 
 
@@ -51,8 +58,15 @@ class KeranjangView extends EventEmitter {
         this._model = model
         this._elements = elements
 
-        elements.form?.addEventListener("submit", ev => ev.preventDefault())
+        elements.form?.addEventListener("submit", ev => {
+            ev.preventDefault()
+            this.showPrintPage()
+        })
 
+    }
+
+    async showPrintPage() {
+        await window.kasir.showPrintPage()
     }
 
 
@@ -122,24 +136,26 @@ class KeranjangView extends EventEmitter {
 
 
     setTotal(total) {
-        this._elements.total.innerText = this.currency(total)
+        if (this._elements.total) this._elements.total.innerText = this.currency(total)
     }
 
     render() {
-        this._elements.list.innerHTML = ""
+        if (this._elements.list) {
+            this._elements.list.innerHTML = ""
 
-        if (this._model.is_empty()) {
-            this._elements.list?.append(this.li({
-                id: 404,
-                namabarang: "Keranjang Tidak Ditemukan"
-            }))
+            if (this._model.is_empty()) {
+                this._elements.list?.append(this.li({
+                    id: 404,
+                    namabarang: "Keranjang Tidak Ditemukan"
+                }))
 
-            this.toggleForm(false)
-        } else {
-            for (let kr of this._model.items) {
-                this._elements.list.append(this.li(kr))
+                this.toggleForm(false)
+            } else {
+                for (let kr of this._model.items) {
+                    this._elements.list.append(this.li(kr))
+                }
+                this.toggleForm(true)
             }
-            this.toggleForm(true)
         }
     }
 }
@@ -149,7 +165,6 @@ class KeranjangController {
         this._model = model
         this._view = view
 
-        this._transaksi_id = null
 
         model.on("keranjang_update", () => this.updateList())
 
@@ -161,10 +176,10 @@ class KeranjangController {
     }
 
     async change(data_barang_id, jumlah, el) {
-        let status = await this._model.add(this._transaksi_id, {data_barang_id, jumlah})
+        let status = await this._model.add({data_barang_id, jumlah})
 
-        if (status && this._transaksi_id) {
-            await this._model.setItems(this._transaksi_id)
+        if (status && this._model.transaksi_id) {
+            await this._model.setItems()
 
             let item = this._model.items.find((br) => br.id == data_barang_id)
 
@@ -178,31 +193,37 @@ class KeranjangController {
     }
 
     async add(barang) {
-        if (this._transaksi_id) {
+        if (this._model.transaksi_id) {
             let status
 
             for (let data_barang_id of barang) {
-                status = await this._model.add(this._transaksi_id, {data_barang_id, jumlah: null})
+
+                status = await this._model.add({data_barang_id, jumlah: null})
             }
 
             if (status) this.updateList()
         }
     }
 
+    items(cb) {
+        this._model.on("barang_items", () => {
+            cb(this._model.items)
+        })
+    }
+
     updateTrasaksiId(id) {
-        this._transaksi_id = id
+        this._model.setTrasaksiId(id)
         this.updateList()
     }
 
     async updateList() {
-        if (this._transaksi_id) {
-            await this._model.setItems(this._transaksi_id)
+        if (this._model.transaksi_id) {
+            await this._model.setItems()
 
             this._view.render()
         }
         this.handleTotal()
     }
 }
-
 
 export {KeranjangModel, KeranjangView, KeranjangController}

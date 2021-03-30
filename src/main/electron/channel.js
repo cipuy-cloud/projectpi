@@ -1,9 +1,10 @@
-const {ipcMain, ipcRenderer, app, dialog} = require("electron")
+const {ipcMain, BrowserWindow, app, dialog} = require("electron")
 const Database = require("better-sqlite3")
 const vars = require("./env")
-
 const connect = (path) => new Database(path)
+const path = require("path")
 
+let printWindow
 
 const pesan = ({status = false, result = null, err = null}) => {
     return {status, result, err}
@@ -17,6 +18,46 @@ const handling = (cb) => {
         return pesan({err})
     }
 
+}
+
+const createWindowPrint = () => {
+    const _root = path.join(__dirname, "..", "..")
+
+    let x, y
+    let focusWindow = BrowserWindow.getFocusedWindow()
+
+    if (focusWindow) {
+        const [currentWindowX, currentWindowY] = focusWindow.getPosition()
+        x = currentWindowX
+        y = currentWindowY
+    }
+
+
+    printWindow = new BrowserWindow({
+        width: 400,
+        height: 600,
+        title: "Data Barang",
+        x: x / 4,
+        y: y / 4,
+        parent: focusWindow,
+        show: false,
+        webPreferences: {
+            contextIsolation: true,
+            preload: `${__dirname}/preload.js`
+        }
+    })
+
+    printWindow.loadURL(`file://${_root}/resources/print.html`);
+
+    printWindow.setMenu(null)
+
+    printWindow.once("ready-to-show", () => {
+        printWindow.show()
+    })
+
+    printWindow.on("closed", () => {
+        printWindow = null
+    })
 }
 
 class Channel {
@@ -35,6 +76,13 @@ class Channel {
     }
 
     listen(mainWindow) {
+        ipcMain.handle(vars.PRINT_BARANG, (_event, _arg) => {
+            createWindowPrint()
+            if (printWindow) {
+
+            }
+        })
+
         ipcMain.handle(vars.BARANG_TAMBAH, async (_event, barang) => {
             let result = await this.barang.insert(barang)
             if (result.status) {

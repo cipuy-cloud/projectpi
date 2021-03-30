@@ -240,7 +240,7 @@ class BarangView extends EventEmitter {
     }
 
     async render() {
-        this._elements.list.innerHTML = ""
+        if (this._elements.list) this._elements.list.innerHTML = ""
 
         if (await this._model.is_empty()) {
 
@@ -252,7 +252,7 @@ class BarangView extends EventEmitter {
             let items = await this._model.getItems()
 
             for (let br of items) {
-                this._elements.list.append(this.li(br))
+                this._elements.list?.append(this.li(br))
             }
 
             this.toggleFormInputBarang(false)

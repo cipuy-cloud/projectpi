@@ -25,6 +25,10 @@ module.exports = {
 
     // Database
     DB: "src/resources/db/database.db",
+
+
+    // window 
+    PRINT_BARANG: "PRINT_BARANG"
 }
 
 

@@ -121,19 +121,27 @@ $hijau:         #18a558;
     }
 }
 
+
+.bg {
+    background: $background;
+}
+
 #right {
     text-align: center;
-    background: $background;
+    @extend .bg;
     max-width: 350px;
     @extend %shadow-small;
 }
 
 #left {
     @extend %widthOverflow;
-    background: $background2;
+    @extend .bg;
 }
 
 
+#list_print {
+    @extend #list_barang;
+}
 
 #list_barang {
     @extend %p0m0;
